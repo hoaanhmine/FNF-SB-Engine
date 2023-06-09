@@ -14,6 +14,7 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
+import flash.geom.Rectangle;
 #if MODS_ALLOWED
 import sys.FileSystem;
 import sys.io.File;
@@ -50,7 +51,12 @@ class CreditsState extends MusicBeatState {
 		add(background);
 
 		velocityBG = new FlxBackdrop(Paths.image('velocity_background'));
-		velocityBG.velocity.set(50, 50);
+		velocityBG.velocity.set(FlxG.random.bool(50) ? 90 : -90, FlxG.random.bool(50) ? 90 : -90);
+		if (ClientPrefs.velocityBackground) {
+			velocityBG.visible = true;
+		} else {
+			velocityBG.visible = false;
+		}
 		add(velocityBG);
 
 		optionsSelect = new FlxTypedGroup<Alphabet>();
@@ -241,16 +247,11 @@ class CreditsState extends MusicBeatState {
 
 		for (i in 0...creditsStuff.length) {
 			var isSelectable:Bool = !unselectableCheck(i);
-			var optionText:Alphabet = new Alphabet(0, 70 * i, creditsStuff[i][0], !isSelectable, false);
+			var optionText:Alphabet = new Alphabet(FlxG.width / 2, 300, creditsStuff[i][0], !isSelectable);
 			optionText.isMenuItem = true;
-			optionText.screenCenter(X);
-			optionText.yAdd -= 70;
-			if (isSelectable) {
-				optionText.x -= 70;
-			}
-			optionText.forceX = optionText.x;
-			// optionText.yMult = 90;
 			optionText.targetY = i;
+			optionText.changeX = false;
+			optionText.snapToPosition();
 			optionsSelect.add(optionText);
 
 			if (isSelectable) {
@@ -269,19 +270,19 @@ class CreditsState extends MusicBeatState {
 
 				if (currentlySelected == -1)
 					currentlySelected = i;
-			}
+			} else
+				optionText.alignment = CENTERED;
 		}
 
 		descBox = new AttachedSprite();
-		descBox.makeGraphic(1, 1, FlxColor.BLACK);
 		descBox.xAdd = -10;
 		descBox.yAdd = -10;
-		descBox.alphaMult = 0.6;
-		descBox.alpha = 0.6;
+		descBox.alphaMult = 0.5;
+		makeDescBoxGraphic();
 		add(descBox);
 
 		descText = new FlxText(50, FlxG.height + offsetThing - 25, 1180, "", 32);
-		descText.setFormat(Paths.font("bahnschrift.ttf"), 32, FlxColor.WHITE, CENTER /*, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK*/);
+		descText.setFormat("Bahnschrift", 32, FlxColor.WHITE, CENTER /*, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK*/);
 		descText.scrollFactor.set();
 		// descText.borderSize = 2.4;
 		descBox.sprTracker = descText;
@@ -316,11 +317,11 @@ class CreditsState extends MusicBeatState {
 				var downP = controls.UI_DOWN_P;
 
 				if (upP) {
-					changeSelection(-1 * shiftMult);
+					changeSelection(shiftMult);
 					holdTime = 0;
 				}
 				if (downP) {
-					changeSelection(1 * shiftMult);
+					changeSelection(shiftMult);
 					holdTime = 0;
 				}
 
@@ -352,16 +353,14 @@ class CreditsState extends MusicBeatState {
 		}
 
 		for (item in optionsSelect.members) {
-			if (!item.isBold) {
+			if (!item.bold) {
 				var lerpVal:Float = CoolUtil.boundTo(elapsed * 12, 0, 1);
 				if (item.targetY == 0) {
 					var lastX:Float = item.x;
 					item.screenCenter(X);
 					item.x = FlxMath.lerp(lastX, item.x - 70, lerpVal);
-					item.forceX = item.x;
 				} else {
 					item.x = FlxMath.lerp(item.x, 200 + -40 * Math.abs(item.targetY), lerpVal);
-					item.forceX = item.x;
 				}
 			}
 		}
@@ -444,6 +443,40 @@ class CreditsState extends MusicBeatState {
 		modsAdded.push(folder);
 	}
 	#end
+
+	var cornerSize:Int = 11;
+
+	function makeDescBoxGraphic() {
+		descBox.makeGraphic(1100, 450, FlxColor.BLACK);
+		descBox.pixels.fillRect(new Rectangle(0, 190, descBox.width, 5), 0x0);
+
+		descBox.pixels.fillRect(new Rectangle(0, 0, cornerSize, cornerSize), 0x0); // top left
+		drawCircleCornerOnSelector(false, false);
+		descBox.pixels.fillRect(new Rectangle(descBox.width - cornerSize, 0, cornerSize, cornerSize), 0x0); // top right
+		drawCircleCornerOnSelector(true, false);
+		descBox.pixels.fillRect(new Rectangle(0, descBox.height - cornerSize, cornerSize, cornerSize), 0x0); // bottom left
+		drawCircleCornerOnSelector(false, true);
+		descBox.pixels.fillRect(new Rectangle(descBox.width - cornerSize, descBox.height - cornerSize, cornerSize, cornerSize), 0x0); // bottom right
+		drawCircleCornerOnSelector(true, true);
+	}
+
+	function drawCircleCornerOnSelector(flipX:Bool, flipY:Bool) {
+		var antiX:Float = (descBox.width - cornerSize);
+		var antiY:Float = flipY ? (descBox.height - 1) : 0;
+		if (flipY)
+			antiY -= 2;
+		descBox.pixels.fillRect(new Rectangle((flipX ? antiX : 1), Std.int(Math.abs(antiY - 8)), 10, 3), FlxColor.BLACK);
+		if (flipY)
+			antiY += 1;
+		descBox.pixels.fillRect(new Rectangle((flipX ? antiX : 2), Std.int(Math.abs(antiY - 6)), 9, 2), FlxColor.BLACK);
+		if (flipY)
+			antiY += 1;
+		descBox.pixels.fillRect(new Rectangle((flipX ? antiX : 3), Std.int(Math.abs(antiY - 5)), 8, 1), FlxColor.BLACK);
+		descBox.pixels.fillRect(new Rectangle((flipX ? antiX : 4), Std.int(Math.abs(antiY - 4)), 7, 1), FlxColor.BLACK);
+		descBox.pixels.fillRect(new Rectangle((flipX ? antiX : 5), Std.int(Math.abs(antiY - 3)), 6, 1), FlxColor.BLACK);
+		descBox.pixels.fillRect(new Rectangle((flipX ? antiX : 6), Std.int(Math.abs(antiY - 2)), 5, 1), FlxColor.BLACK);
+		descBox.pixels.fillRect(new Rectangle((flipX ? antiX : 8), Std.int(Math.abs(antiY - 1)), 3, 1), FlxColor.BLACK);
+	}
 
 	function getCurrentBGColor() {
 		var bgColor:String = creditsStuff[currentlySelected][4];

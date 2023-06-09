@@ -93,27 +93,38 @@ class OptionsState extends MusicBeatState {
 		add(background);
 
 		velocityBG = new FlxBackdrop(Paths.image('velocity_background'));
-		velocityBG.velocity.set(50, 50);
+		velocityBG.velocity.set(FlxG.random.bool(50) ? 90 : -90, FlxG.random.bool(50) ? 90 : -90);
+		if (ClientPrefs.velocityBackground) {
+			velocityBG.visible = true;
+		} else {
+			velocityBG.visible = false;
+		}
 		add(velocityBG);
 
 		optionsSelect = new FlxTypedGroup<Alphabet>();
 		add(optionsSelect);
 
 		for (i in 0...options.length) {
-			var optionText:Alphabet = new Alphabet(0, 0, options[i], true, false);
-			optionText.screenCenter();
+			var optionText:Alphabet = new Alphabet(0, 0, options[i], true);
+			optionText.x = 128;
+			optionText.screenCenter(Y);
 			optionText.y += (100 * (i - (options.length / 2))) + 50;
 			optionsSelect.add(optionText);
 		}
 
-		selectorLeft = new Alphabet(0, 0, '>', true, false);
+		selectorLeft = new Alphabet(0, 0, '>', true);
 		add(selectorLeft);
-		selectorRight = new Alphabet(0, 0, '<', true, false);
+		selectorRight = new Alphabet(0, 0, '<', true);
 		add(selectorRight);
 
 		#if android
-		tipText = new FlxText(10, FlxG.height - 24, 0, 'Press C to customize your android controls', 16);
-		tipText.setFormat(Paths.font('bahnschrift.ttf'), 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		tipText = new FlxText(10, FlxG.height - 24, 0, 'Press X to customize your android controls!', 16);
+		tipText.setFormat("Bahnschrift", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		tipText.borderSize = 1.25;
+		tipText.scrollFactor.set();
+		add(tipText);
+		tipText = new FlxText(10, FlxG.height - 44, 0, 'Press Y to customize your hitbox mode!', 16);
+		tipText.setFormat("Bahnschrift", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		tipText.borderSize = 1.25;
 		tipText.scrollFactor.set();
 		add(tipText);
@@ -123,8 +134,8 @@ class OptionsState extends MusicBeatState {
 		ClientPrefs.saveSettings();
 
 		#if android
-		addVirtualPad(UP_DOWN, A_B_C);
-		virtualPad.y = -24;
+		addVirtualPad(UP_DOWN, A_B_X_Y);
+		virtualPad.y = -48;
 		#end
 
 		super.create();
@@ -163,11 +174,17 @@ class OptionsState extends MusicBeatState {
 		}
 
 		#if android
-		if (virtualPad.buttonC.justPressed) {
+		if (virtualPad.buttonX.justPressed) {
 			#if android
 			removeVirtualPad();
 			#end
 			openSubState(new android.AndroidControlsSubState());
+		}
+		if (virtualPad.buttonY.justPressed) {
+			#if android
+			removeVirtualPad();
+			#end
+			openSubState(new android.AndroidHitboxSelectorSubState());
 		}
 		#end
 	}

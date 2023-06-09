@@ -6,6 +6,7 @@ import Discord.DiscordClient;
 import flash.text.TextField;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.addons.display.FlxBackdrop;
 import flixel.addons.display.FlxGridOverlay;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.addons.transition.FlxTransitionableState;
@@ -37,7 +38,9 @@ class GameplayChangersSubstate extends MusicBeatSubstate {
 	private var checkboxGroup:FlxTypedGroup<CheckboxThingie>;
 	private var grpTexts:FlxTypedGroup<AttachedText>;
 
-	var background:FlxSprite;
+	var blackBackground:FlxSprite;
+	var purpleBackground:FlxSprite;
+	var checker:FlxBackdrop;
 
 	function getOptions() {
 		var goption:GameplayOption = new GameplayOption('Scroll Type', 'scrolltype', 'string', 'multiplicative', ["multiplicative", "constant"]);
@@ -106,9 +109,41 @@ class GameplayChangersSubstate extends MusicBeatSubstate {
 	public function new() {
 		super();
 
-		background = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		background.alpha = 0.6;
-		add(background);
+		blackBackground = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		blackBackground.alpha = 0.6;
+		if (ClientPrefs.velocityBackground) {
+			blackBackground.visible = true;
+		} else {
+			blackBackground.visible = false;
+		}
+		add(blackBackground);
+
+		purpleBackground = new FlxSprite(-80).loadGraphic(Paths.image('menuDesat'));
+		purpleBackground.scrollFactor.set();
+		purpleBackground.setGraphicSize(Std.int(purpleBackground.width * 1.175));
+		purpleBackground.updateHitbox();
+		purpleBackground.screenCenter();
+		if (ClientPrefs.velocityBackground) {
+			purpleBackground.visible = false;
+		} else {
+			purpleBackground.visible = true;
+		}
+		purpleBackground.antialiasing = ClientPrefs.globalAntialiasing;
+		purpleBackground.color = 0xFF800080;
+		add(purpleBackground);
+
+		checker = new FlxBackdrop(Paths.image('checker'));
+		checker.scrollFactor.set();
+		checker.scale.set(0.7, 0.7);
+		checker.screenCenter(X);
+		checker.velocity.set(150, 80);
+		if (ClientPrefs.velocityBackground) {
+			checker.visible = true;
+		} else {
+			checker.visible = false;
+		}
+		checker.antialiasing = ClientPrefs.globalAntialiasing;
+		add(checker);
 
 		// avoids lagspikes while scrolling through menus!
 		optionsSelect = new FlxTypedGroup<Alphabet>();
@@ -123,24 +158,26 @@ class GameplayChangersSubstate extends MusicBeatSubstate {
 		getOptions();
 
 		for (i in 0...optionsArray.length) {
-			var optionText:Alphabet = new Alphabet(0, 70 * i, optionsArray[i].name, true, false, 0.05, 0.8);
+			var optionText:Alphabet = new Alphabet(200, 360, optionsArray[i].name, true);
 			optionText.isMenuItem = true;
-			optionText.x += 300;
-			/*optionText.forceX = 300;
-				optionText.yMult = 90; */
-			optionText.xAdd = 120;
+			optionText.scaleX = 0.8;
+			optionText.scaleY = 0.8;
 			optionText.targetY = i;
 			optionsSelect.add(optionText);
 
 			if (optionsArray[i].type == 'bool') {
+				optionText.x += 110;
+				optionText.startPosition.x += 110;
+				optionText.snapToPosition();
 				var checkbox:CheckboxThingie = new CheckboxThingie(optionText.x - 105, optionText.y, optionsArray[i].getValue() == true);
 				checkbox.sprTracker = optionText;
-				checkbox.offsetX -= 60;
+				checkbox.offsetX -= 32;
+				checkbox.offsetY = -120;
 				checkbox.ID = i;
 				checkboxGroup.add(checkbox);
-				optionText.xAdd += 80;
 			} else {
-				var valueText:AttachedText = new AttachedText('' + optionsArray[i].getValue(), optionText.width + 80, true, 0.8);
+				optionText.snapToPosition();
+				var valueText:AttachedText = new AttachedText(Std.string(optionsArray[i].getValue()), optionText.width, -72, true, 0.8);
 				valueText.sprTracker = optionText;
 				valueText.copyAlpha = true;
 				valueText.ID = i;
@@ -467,7 +504,7 @@ class GameplayOption {
 
 	private function set_text(newValue:String = '') {
 		if (child != null) {
-			child.changeText(newValue);
+			child.text = newValue;
 		}
 		return null;
 	}

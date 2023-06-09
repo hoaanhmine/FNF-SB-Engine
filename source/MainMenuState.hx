@@ -25,7 +25,7 @@ import flixel.input.keyboard.FlxKey;
 using StringTools;
 
 class MainMenuState extends MusicBeatState {
-	public static var sbEngineVersion:String = '2.5.0';
+	public static var sbEngineVersion:String = '2.6.0';
 	public static var psychEngineVersion:String = '0.6.2';
 	public static var currentlySelected:Int = 0;
 
@@ -38,6 +38,7 @@ class MainMenuState extends MusicBeatState {
 	var purple:FlxSprite;
 	var velocityBG:FlxBackdrop;
 	var buttonBackground:FlxSprite;
+	var sbEngineLogo:FlxSprite;
 	var versionSb:FlxText;
 	var versionPsych:FlxText;
 	var versionFnf:FlxText;
@@ -93,7 +94,12 @@ class MainMenuState extends MusicBeatState {
 		add(purple);
 
 		velocityBG = new FlxBackdrop(Paths.image('velocity_background'));
-		velocityBG.velocity.set(50, 50);
+		velocityBG.velocity.set(FlxG.random.bool(50) ? 90 : -90, FlxG.random.bool(50) ? 90 : -90);
+		if (ClientPrefs.velocityBackground) {
+			velocityBG.visible = true;
+		} else {
+			velocityBG.visible = false;
+		}
 		add(velocityBG);
 
 		buttonBackground = new FlxSprite(-120).loadGraphic(Paths.image('buttonBackground'));
@@ -147,7 +153,7 @@ class MainMenuState extends MusicBeatState {
 		versionFnf.setFormat("Bahnschrift", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionFnf);
 
-		var sbEngineLogo:FlxSprite = new FlxSprite(-130, 120).loadGraphic(Paths.image('sbEngineLogo'));
+		sbEngineLogo = new FlxSprite(-130, 120).loadGraphic(Paths.image('sbEngineLogo'));
 		sbEngineLogo.antialiasing = ClientPrefs.globalAntialiasing;
 		add(sbEngineLogo);
 

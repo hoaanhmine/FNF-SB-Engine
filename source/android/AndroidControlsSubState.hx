@@ -1,5 +1,6 @@
 package android;
 
+import android.flixel.FlxNewHitbox;
 import android.flixel.FlxButton;
 import android.flixel.FlxHitbox;
 import android.flixel.FlxVirtualPad;
@@ -22,6 +23,7 @@ class AndroidControlsSubState extends FlxSubState {
 	final controlsItems:Array<String> = ['Pad-Right', 'Pad-Left', 'Pad-Custom', 'Pad-Duo', 'Hitbox', 'Keyboard'];
 	var virtualPad:FlxVirtualPad;
 	var hitbox:FlxHitbox;
+	var newHitbox:FlxNewHitbox;
 	var upPosition:FlxText;
 	var downPosition:FlxText;
 	var leftPosition:FlxText;
@@ -45,7 +47,12 @@ class AndroidControlsSubState extends FlxSubState {
 		add(background);
 
 		velocityBG = new FlxBackdrop(Paths.image('velocity_background'));
-		velocityBG.velocity.set(50, 50);
+		velocityBG.velocity.set(FlxG.random.bool(50) ? 90 : -90, FlxG.random.bool(50) ? 90 : -90);
+		if (ClientPrefs.velocityBackground) {
+			velocityBG.visible = true;
+		} else {
+			velocityBG.visible = false;
+		}
 		add(velocityBG);
 
 		resetButton = new FlxButton(FlxG.width - 200, 50, 'Reset', function() {
@@ -69,6 +76,10 @@ class AndroidControlsSubState extends FlxSubState {
 		virtualPad = new FlxVirtualPad(NONE, NONE);
 		virtualPad.visible = false;
 		add(virtualPad);
+
+		newHitbox = new FlxNewHitbox();
+		newHitbox.visible = false;
+		add(newHitbox);
 
 		hitbox = new FlxHitbox();
 		hitbox.visible = false;

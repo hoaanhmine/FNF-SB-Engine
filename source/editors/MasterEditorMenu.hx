@@ -54,7 +54,12 @@ class MasterEditorMenu extends MusicBeatState {
 		add(background);
 
 		velocityBG = new FlxBackdrop(Paths.image('velocity_background'));
-		velocityBG.velocity.set(50, 50);
+		velocityBG.velocity.set(FlxG.random.bool(50) ? 90 : -90, FlxG.random.bool(50) ? 90 : -90);
+		if (ClientPrefs.velocityBackground) {
+			velocityBG.visible = true;
+		} else {
+			velocityBG.visible = false;
+		}
 		add(velocityBG);
 
 		grpTexts = new FlxTypedGroup<Alphabet>();
@@ -64,10 +69,11 @@ class MasterEditorMenu extends MusicBeatState {
 		add(grpTexts);
 
 		for (i in 0...options.length) {
-			var leText:Alphabet = new Alphabet(0, (70 * i) + 30, options[i], true, false);
+			var leText:Alphabet = new Alphabet(90, 320, options[i], true);
 			leText.isMenuItem = true;
 			leText.targetY = i;
 			grpTexts.add(leText);
+			leText.snapToPosition();
 		}
 
 		#if MODS_ALLOWED
@@ -117,6 +123,7 @@ class MasterEditorMenu extends MusicBeatState {
 		#end
 
 		if (controls.BACK) {
+			FlxG.sound.play(Paths.sound('cancelMenu'));
 			if (ClientPrefs.mainMenuStyle == 'Classic')
 				MusicBeatState.switchState(new ClassicMainMenuState());
 			else

@@ -14,6 +14,9 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
+import flixel.effects.FlxFlicker;
+import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import lime.utils.Assets;
 import flixel.system.FlxSound;
@@ -27,6 +30,8 @@ using StringTools;
 
 class FreeplayState extends MusicBeatState {
 	var songs:Array<SongMetaData> = [];
+	var loading:Bool = false;
+	var loaded:Bool = false;
 
 	var selector:FlxText;
 
@@ -39,6 +44,7 @@ class FreeplayState extends MusicBeatState {
 	var scoreBG:FlxSprite;
 	var scoreText:FlxText;
 	var difficultyText:FlxText;
+	var loadingTxt:FlxText;
 	var lerpScore:Int = 0;
 	var lerpRating:Float = 0;
 	var intendedScore:Int = 0;
@@ -48,6 +54,8 @@ class FreeplayState extends MusicBeatState {
 	private var curPlaying:Bool = false;
 
 	private var iconArray:Array<HealthIcon> = [];
+
+	var barValue:Float = 0;
 
 	var background:FlxSprite;
 	var velocityBG:FlxBackdrop;
@@ -98,28 +106,28 @@ class FreeplayState extends MusicBeatState {
 		add(background);
 
 		velocityBG = new FlxBackdrop(Paths.image('velocity_background'));
-		velocityBG.velocity.set(50, 50);
+		velocityBG.velocity.set(FlxG.random.bool(50) ? 90 : -90, FlxG.random.bool(50) ? 90 : -90);
+		if (ClientPrefs.velocityBackground) {
+			velocityBG.visible = true;
+		} else {
+			velocityBG.visible = false;
+		}
 		add(velocityBG);
 
 		grpSongs = new FlxTypedGroup<Alphabet>();
 		add(grpSongs);
 
 		for (i in 0...songs.length) {
-			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, songs[i].songName, true, false);
+			var songText:Alphabet = new Alphabet(90, 320, songs[i].songName, true);
 			songText.isMenuItem = true;
-			songText.targetY = i;
+			songText.targetY = i - currentlySelected;
 			grpSongs.add(songText);
 
-			if (songText.width > 980) {
-				var textScale:Float = 980 / songText.width;
-				songText.scale.x = textScale;
-				for (letter in songText.lettersArray) {
-					letter.x *= textScale;
-					letter.offset.x *= textScale;
-				}
-				// songText.updateHitbox();
-				// trace(songs[i].songName + ' new scale: ' + textScale);
+			var maxWidth = 980;
+			if (songText.width > maxWidth) {
+				songText.scaleX = maxWidth / songText.width;
 			}
+			songText.snapToPosition();
 
 			Paths.currentModDirectory = songs[i].folder;
 			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
@@ -132,7 +140,7 @@ class FreeplayState extends MusicBeatState {
 		WeekData.setDirectoryFromWeek();
 
 		scoreText = new FlxText(FlxG.width - 250, 5, 0, "", 32);
-		scoreText.setFormat(Paths.font("bahnschrift.ttf"), 32, FlxColor.WHITE, RIGHT);
+		scoreText.setFormat("Bahnschrift", 32, FlxColor.WHITE, RIGHT);
 
 		scoreBG = new FlxSprite(scoreText.x - 6, 0).makeGraphic(1, 92, 0xFF000000);
 		scoreBG.alpha = 0.6;
@@ -141,6 +149,11 @@ class FreeplayState extends MusicBeatState {
 		difficultyText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
 		difficultyText.font = scoreText.font;
 		add(difficultyText);
+
+		loadingTxt = new FlxText(0, FlxG.height - 148, 800, "", 32);
+		loadingTxt.font = scoreText.font;
+		loadingTxt.alpha = 0;
+		add(loadingTxt);
 
 		add(scoreText);
 
@@ -176,7 +189,7 @@ class FreeplayState extends MusicBeatState {
 		var size:Int = 18;
 		#end
 		var text:FlxText = new FlxText(textBG.x, textBG.y + 4, FlxG.width, leText, size);
-		text.setFormat(Paths.font("bahnschrift.ttf"), size, FlxColor.WHITE, CENTER);
+		text.setFormat("Bahnschrift", size, FlxColor.WHITE, CENTER);
 		text.scrollFactor.set();
 		add(text);
 
@@ -265,12 +278,6 @@ class FreeplayState extends MusicBeatState {
 					changeDiff();
 				}
 			}
-
-			if (FlxG.mouse.wheel != 0) {
-				FlxG.sound.play(Paths.sound('scrollMenu'), 0.2);
-				changeSelection(-shiftMult * FlxG.mouse.wheel, false);
-				changeDiff();
-			}
 		}
 
 		if (controls.UI_LEFT_P)
@@ -342,7 +349,7 @@ class FreeplayState extends MusicBeatState {
 			}
 
 			FlxG.sound.music.volume = 0;
-
+			FlxG.sound.play(Paths.sound('confirmMenu')); //
 			destroyFreeplayVocals();
 		} else if (controls.RESET #if android || virtualPad.buttonY.justPressed #end) {
 			#if android

@@ -140,7 +140,9 @@ class NoteOffsetState extends MusicBeatState {
 
 		// Note delay stuff
 
-		beatText = new Alphabet(0, 0, 'Beat Hit!', true, false, 0.05, 0.6);
+		beatText = new Alphabet(0, 0, 'Beat Hit!', true);
+		beatText.scaleX = 0.6;
+		beatText.scaleY = 0.6;
 		beatText.x += 260;
 		beatText.alpha = 0;
 		beatText.acceleration.y = 250;
@@ -148,7 +150,7 @@ class NoteOffsetState extends MusicBeatState {
 		add(beatText);
 
 		timeTxt = new FlxText(0, 600, FlxG.width, "", 32);
-		timeTxt.setFormat(Paths.font("bahnschrift.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		timeTxt.setFormat("Bahnschrift", 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		timeTxt.scrollFactor.set();
 		timeTxt.borderSize = 2;
 		timeTxt.visible = false;
@@ -157,18 +159,29 @@ class NoteOffsetState extends MusicBeatState {
 		barPercent = ClientPrefs.noteOffset;
 		updateNoteDelay();
 
-		timeBarBG = new FlxSprite(0, timeTxt.y + 8).loadGraphic(Paths.image('timeBar'));
-		timeBarBG.setGraphicSize(Std.int(timeBarBG.width * 1.2));
-		timeBarBG.updateHitbox();
-		timeBarBG.cameras = [camHUD];
-		timeBarBG.screenCenter(X);
+		if (ClientPrefs.sbEngineTimeBar) {
+			timeBarBG = new FlxSprite(0, timeTxt.y + 8).loadGraphic(Paths.image('sbEngineTimeBar'));
+			timeBarBG.setGraphicSize(Std.int(timeBarBG.width * 1.2));
+			timeBarBG.updateHitbox();
+			timeBarBG.cameras = [camHUD];
+			timeBarBG.screenCenter(X);
+		} else {
+			timeBarBG = new FlxSprite(0, timeTxt.y + 8).loadGraphic(Paths.image('timeBar'));
+			timeBarBG.setGraphicSize(Std.int(timeBarBG.width * 1.2));
+			timeBarBG.updateHitbox();
+			timeBarBG.cameras = [camHUD];
+		}
 		timeBarBG.visible = false;
 
 		timeBar = new FlxBar(0, timeBarBG.y + 4, LEFT_TO_RIGHT, Std.int(timeBarBG.width - 8), Std.int(timeBarBG.height - 8), this, 'barPercent', delayMin,
 			delayMax);
 		timeBar.scrollFactor.set();
 		timeBar.screenCenter(X);
-		timeBar.createFilledBar(0xFF000000, 0xFF800080);
+		if (ClientPrefs.sbEngineTimeBar) {
+			timeBar.createFilledBar(0xFF000000, 0xFF800080);
+		} else {
+			timeBar.createFilledBar(0xFF000000, 0xFFFFFFFF);
+		}
 		timeBar.numDivisions = 800; // How much lag this causes?? Should i tone it down to idk, 400 or 200?
 		timeBar.visible = false;
 		timeBar.cameras = [camHUD];
@@ -186,7 +199,7 @@ class NoteOffsetState extends MusicBeatState {
 		add(blackBox);
 
 		changeModeText = new FlxText(0, 4, FlxG.width, "", 32);
-		changeModeText.setFormat(Paths.font("bahnschrift.ttf"), 32, FlxColor.WHITE, CENTER);
+		changeModeText.setFormat("Bahnschrift", 32, FlxColor.WHITE, CENTER);
 		changeModeText.scrollFactor.set();
 		changeModeText.cameras = [camHUD];
 		add(changeModeText);
@@ -408,7 +421,7 @@ class NoteOffsetState extends MusicBeatState {
 	function createTexts() {
 		for (i in 0...4) {
 			var text:FlxText = new FlxText(10, 48 + (i * 30), 0, '', 24);
-			text.setFormat(Paths.font("bahnschrift.ttf"), 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			text.setFormat("Bahnschrift", 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			text.scrollFactor.set();
 			text.borderSize = 2;
 			dumbTexts.add(text);

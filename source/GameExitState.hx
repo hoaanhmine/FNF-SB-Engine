@@ -38,6 +38,7 @@ class GameExitState extends MusicBeatState {
 	public static var menuBG:FlxSprite;
 	public static var menuText:Alphabet;
 
+	var purpleBackground:FlxSprite;
 	var checker:FlxBackdrop;
 	var alertMessage:String = "";
 
@@ -63,15 +64,34 @@ class GameExitState extends MusicBeatState {
 		DiscordClient.changePresence("Game Closing Menu", null);
 		#end
 
+		purpleBackground = new FlxSprite(-80).loadGraphic(Paths.image('menuDesat'));
+		purpleBackground.scrollFactor.set();
+		purpleBackground.setGraphicSize(Std.int(purpleBackground.width * 1.175));
+		purpleBackground.updateHitbox();
+		purpleBackground.screenCenter();
+		if (ClientPrefs.velocityBackground) {
+			purpleBackground.visible = false;
+		} else {
+			purpleBackground.visible = true;
+		}
+		purpleBackground.antialiasing = ClientPrefs.globalAntialiasing;
+		purpleBackground.color = 0xFF800080;
+		add(purpleBackground);
+
 		checker = new FlxBackdrop(Paths.image('checker'));
 		checker.scrollFactor.set();
 		checker.scale.set(0.7, 0.7);
 		checker.screenCenter(X);
 		checker.velocity.set(150, 80);
+		if (ClientPrefs.velocityBackground) {
+			checker.visible = true;
+		} else {
+			checker.visible = false;
+		}
 		checker.antialiasing = ClientPrefs.globalAntialiasing;
 		add(checker);
 
-		menuText = new Alphabet(0, 0, "Quit the game?", true, false, 0, 1);
+		menuText = new Alphabet(0, 0, "Quit the game?", true);
 		menuText.screenCenter();
 		menuText.y -= 150;
 		menuText.alpha = 1;
@@ -83,15 +103,15 @@ class GameExitState extends MusicBeatState {
 		add(optionsSelect);
 
 		for (i in 0...options.length) {
-			var optionText:Alphabet = new Alphabet(0, 0, options[i], true, false);
+			var optionText:Alphabet = new Alphabet(0, 0, options[i], true);
 			optionText.screenCenter();
 			optionText.y += (100 * (i - (options.length / 2))) + 50;
 			optionsSelect.add(optionText);
 		}
 
-		selectorLeft = new Alphabet(0, 0, '>', true, false);
+		selectorLeft = new Alphabet(0, 0, '>', true);
 		add(selectorLeft);
-		selectorRight = new Alphabet(0, 0, '<', true, false);
+		selectorRight = new Alphabet(0, 0, '<', true);
 		add(selectorRight);
 
 		changeSelection();
