@@ -26,10 +26,10 @@ class AndroidControls extends FlxSpriteGroup {
 			case 3: // BOTH_FULL
 				initControler(3);
 			case 4: // HITBOX
-				if (ClientPrefs.hitboxSelection != 'newHitbox') {
-					initControler(4);
-				} else {
+				if (ClientPrefs.hitboxSelection != 'New') {
 					initControler(5);
+				} else {
+					initControler(4);
 				}
 			case 5: // KEYBOARD
 		}
