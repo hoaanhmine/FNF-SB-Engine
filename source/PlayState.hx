@@ -6,6 +6,8 @@ import Discord.DiscordClient;
 #end
 import Section.SwagSection;
 import Song.SwagSong;
+import WiggleEffect;
+import WiggleEffect.WiggleEffectType;
 import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxG;
@@ -219,6 +221,12 @@ class PlayState extends MusicBeatState {
 	public var autoplaySine:Float = 0;
 	public var autoplayTxt:FlxText;
 
+	public static var the3DWorldEffectFlag:WiggleEffect;
+	public static var the3DWorldEffectHeatWaveHor:WiggleEffect;
+	public static var the3DWorldEffectWavy:WiggleEffect;
+	public static var the3DWorldEffectHeatWaveVer:WiggleEffect;
+	public static var the3DWorldEffectDreamy:WiggleEffect;
+
 	public var iconPlayer1:HealthIcon;
 	public var iconPlayer2:HealthIcon;
 	public var camHUD:FlxCamera;
@@ -388,6 +396,36 @@ class PlayState extends MusicBeatState {
 		for (i in 0...keysArray.length) {
 			keysPressed.push(false);
 		}
+
+		the3DWorldEffectFlag = new WiggleEffect();
+		the3DWorldEffectFlag.effectType = WiggleEffectType.FLAG;
+		the3DWorldEffectFlag.waveAmplitude = 0.1;
+		the3DWorldEffectFlag.waveFrequency = 5;
+		the3DWorldEffectFlag.waveSpeed = 2.25;
+
+		the3DWorldEffectHeatWaveHor = new WiggleEffect();
+		the3DWorldEffectHeatWaveHor.effectType = WiggleEffectType.HEAT_WAVE_HORIZONTAL;
+		the3DWorldEffectHeatWaveHor.waveAmplitude = 0.1;
+		the3DWorldEffectHeatWaveHor.waveFrequency = 5;
+		the3DWorldEffectHeatWaveHor.waveSpeed = 2.25;
+
+		the3DWorldEffectHeatWaveVer = new WiggleEffect();
+		the3DWorldEffectHeatWaveVer.effectType = WiggleEffectType.HEAT_WAVE_VERTICAL;
+		the3DWorldEffectHeatWaveVer.waveAmplitude = 0.1;
+		the3DWorldEffectHeatWaveVer.waveFrequency = 5;
+		the3DWorldEffectHeatWaveVer.waveSpeed = 2.25;
+
+		the3DWorldEffectDreamy = new WiggleEffect();
+		the3DWorldEffectDreamy.effectType = WiggleEffectType.DREAMY;
+		the3DWorldEffectDreamy.waveAmplitude = 0.1;
+		the3DWorldEffectDreamy.waveFrequency = 5;
+		the3DWorldEffectDreamy.waveSpeed = 2.25;
+
+		the3DWorldEffectWavy = new WiggleEffect();
+		the3DWorldEffectWavy.effectType = WiggleEffectType.WAVY;
+		the3DWorldEffectWavy.waveAmplitude = 0.2;
+		the3DWorldEffectWavy.waveFrequency = 3;
+		the3DWorldEffectWavy.waveSpeed = 1.25;
 
 		if (FlxG.sound.music != null)
 			FlxG.sound.music.stop();
@@ -1019,17 +1057,26 @@ class PlayState extends MusicBeatState {
 		}
 		updateTime = showTime;
 
-		if (ClientPrefs.sbEngineTimeBar) {
+		if (ClientPrefs.hudStyle == 'SB Engine') {
 			timeBarBG = new AttachedSprite('sbEngineTimeBar');
 			timeBarBG.x = timeTxt.x;
 			timeBarBG.y = timeTxt.y + (timeTxt.height / 4);
 			timeBarBG.scrollFactor.set();
 			timeBarBG.screenCenter(X);
-		} else {
+		}
+		if (ClientPrefs.hudStyle == 'Psych Engine') {
 			timeBarBG = new AttachedSprite('timeBar');
 			timeBarBG.x = timeTxt.x;
 			timeBarBG.y = timeTxt.y + (timeTxt.height / 4);
 			timeBarBG.scrollFactor.set();
+		}
+		if (ClientPrefs.hudStyle == 'Better UI') {
+			timeBarBG = new AttachedSprite('longTimeBar');
+			timeBarBG.x = timeTxt.x;
+			timeBarBG.y = timeTxt.y + (timeTxt.height / 4);
+			timeBarBG.scrollFactor.set();
+			timeBarBG.screenCenter(X);
+			insert(members.indexOf(timeBarBG), timeBar);
 		}
 		timeBarBG.alpha = 0;
 		timeBarBG.visible = showTime;
@@ -1041,9 +1088,10 @@ class PlayState extends MusicBeatState {
 		timeBar = new FlxBar(timeBarBG.x + 4, timeBarBG.y + 4, LEFT_TO_RIGHT, Std.int(timeBarBG.width - 8), Std.int(timeBarBG.height - 8), this,
 			'songPercent', 0, 1);
 		timeBar.scrollFactor.set();
-		if (ClientPrefs.sbEngineTimeBar) {
+		if (ClientPrefs.hudStyle == 'SB Engine') {
 			timeBar.createFilledBar(0xFF000000, 0xFF800080);
-		} else {
+		}
+		if (ClientPrefs.hudStyle == 'Psych Engine') {
 			timeBar.createFilledBar(0xFF000000, 0xFFFFFFFF);
 		}
 		timeBar.numDivisions = 800;
@@ -1158,12 +1206,29 @@ class PlayState extends MusicBeatState {
 		add(iconPlayer2);
 		reloadHealthBarColors();
 
-		scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
-		scoreTxt.setFormat(Paths.font("bahnschrift.ttf"), 17, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		scoreTxt.scrollFactor.set();
-		scoreTxt.borderSize = 1.25;
-		scoreTxt.visible = !ClientPrefs.hideHud;
-		add(scoreTxt);
+		if (ClientPrefs.hudStyle == 'SB Engine') {
+			scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
+			scoreTxt.setFormat(Paths.font("bahnschrift.ttf"), 17, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			scoreTxt.scrollFactor.set();
+			scoreTxt.borderSize = 1.25;
+			scoreTxt.visible = !ClientPrefs.hideHud;
+			add(scoreTxt);
+		}
+		if (ClientPrefs.hudStyle == 'Psych Engine') {
+			scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
+			scoreTxt.setFormat(Paths.font("bahnschrift.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			scoreTxt.scrollFactor.set();
+			scoreTxt.borderSize = 1.25;
+			scoreTxt.visible = !ClientPrefs.hideHud;
+			add(scoreTxt);
+		}
+		if (ClientPrefs.hudStyle == 'Better UI') {
+			scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
+			scoreTxt.setFormat(Paths.font("bahnschrift.ttf"), 17, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			scoreTxt.scrollFactor.set();
+			scoreTxt.visible = !ClientPrefs.hideHud;
+			add(scoreTxt);
+		}
 
 		judgementCounterTxt = new FlxText(25, 0, FlxG.width, "", 20);
 		judgementCounterTxt.setFormat(Paths.font("bahnschrift.ttf"), 20, FlxColor.WHITE, FlxTextAlign.LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -1188,13 +1253,38 @@ class PlayState extends MusicBeatState {
 			+ MainMenuState.psychEngineVersion + ") ";
 		add(watermarkTxt);
 
-		autoplayTxt = new FlxText(400, timeBarBG.y + 500, FlxG.width - 800, "[AUTOPLAY]", 32);
-		autoplayTxt.setFormat(Paths.font("bahnschrift.ttf"), 30, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		autoplayTxt.scrollFactor.set();
-		autoplayTxt.visible = cpuControlled;
-		add(autoplayTxt);
-		if (ClientPrefs.downScroll) {
-			autoplayTxt.y = timeBarBG.y - 500;
+		if (ClientPrefs.hudStyle == 'SB Engine') {
+			autoplayTxt = new FlxText(400, timeBarBG.y + 500, FlxG.width - 800, "AUTOPLAY", 32);
+			autoplayTxt.setFormat(Paths.font("bahnschrift.ttf"), 30, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			autoplayTxt.scrollFactor.set();
+			autoplayTxt.visible = cpuControlled;
+			add(autoplayTxt);
+			if (ClientPrefs.downScroll) {
+				autoplayTxt.y = timeBarBG.y - 500;
+			}
+		}
+
+		if (ClientPrefs.hudStyle == 'Psych Engine') {
+			autoplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "BOTPLAY", 32);
+			autoplayTxt.setFormat(Paths.font("bahnschrift.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			autoplayTxt.scrollFactor.set();
+			autoplayTxt.borderSize = 1.25;
+			autoplayTxt.visible = cpuControlled;
+			add(autoplayTxt);
+			if (ClientPrefs.downScroll) {
+				autoplayTxt.y = timeBarBG.y - 78;
+			}
+		}
+
+		if (ClientPrefs.hudStyle == 'Better UI') {
+			autoplayTxt = new FlxText(400, timeBarBG.y + 500, FlxG.width - 800, "[CpuControlled]", 32);
+			autoplayTxt.setFormat(Paths.font("bahnschrift.ttf"), 30, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			autoplayTxt.scrollFactor.set();
+			autoplayTxt.visible = cpuControlled;
+			add(autoplayTxt);
+			if (ClientPrefs.downScroll) {
+				autoplayTxt.y = timeBarBG.y - 500;
+			}
 		}
 
 		strumLineNotes.cameras = [camHUD];
@@ -1436,6 +1526,10 @@ class PlayState extends MusicBeatState {
 	public function reloadHealthBarColors() {
 		healthBar.createFilledBar(FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]),
 			FlxColor.fromRGB(boyfriend.healthColorArray[0], boyfriend.healthColorArray[1], boyfriend.healthColorArray[2]));
+
+		if (ClientPrefs.hudStyle == 'Better UI') {
+			timeBar.createFilledBar(0xFF121212, FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]));
+		}
 
 		healthBar.updateBar();
 	}
@@ -1992,9 +2086,24 @@ class PlayState extends MusicBeatState {
 	}
 
 	public function updateScore(miss:Bool = false) {
-		scoreTxt.text = 'Score: ' + songScore + ' | Combo breaks: ' + songMisses + ' | Accruracy: ' + Highscore.floorDecimal(ratingPercent * 100, 2) + '%'
-			+ ' | ' + ratingName + ' [' + ratingFC + ']';
-		judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nFreaks: ${freaks}';
+		if (ClientPrefs.hudStyle == 'SB Engine') {
+			scoreTxt.text = 'Score: ' + songScore + ' | Combo breaks: ' + songMisses + ' | Accruracy: ' + Highscore.floorDecimal(ratingPercent * 100, 2)
+				+ '%' + ' | ' + ratingName + ' [' + ratingFC + ']';
+			judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nFreaks: ${freaks}';
+		}
+		if (ClientPrefs.hudStyle == 'Psych Engine') {
+			scoreTxt.text = 'Score: '
+				+ songScore
+				+ ' | Misses: '
+				+ songMisses
+				+ ' | Rating: '
+				+ ratingName
+				+ (ratingName != '?' ? ' (${Highscore.floorDecimal(ratingPercent * 100, 2)}%) - $ratingFC' : '');
+		}
+		if (ClientPrefs.hudStyle == 'Better UI') {
+			scoreTxt.text = 'Score: ' + songScore + ' // Misses: ' + songMisses + ' // Accruracy: ' + Highscore.floorDecimal(ratingPercent * 100, 2) + '%'
+				+ ' // ' + ratingName + ' (' + ratingFC + ')';
+		}
 
 		if (ClientPrefs.scoreZoom && !miss && !cpuControlled) {
 			if (scoreTxtTween != null) {
@@ -2520,6 +2629,12 @@ class PlayState extends MusicBeatState {
 	override public function update(elapsed:Float) {
 		callOnLuas('onUpdate', [elapsed]);
 
+		the3DWorldEffectFlag.update(elapsed);
+		the3DWorldEffectHeatWaveHor.update(elapsed);
+		the3DWorldEffectHeatWaveVer.update(elapsed);
+		the3DWorldEffectDreamy.update(elapsed);
+		the3DWorldEffectWavy.update(elapsed);
+
 		switch (currentlyStage) {
 			case 'tank':
 				moveTank(elapsed);
@@ -2688,13 +2803,33 @@ class PlayState extends MusicBeatState {
 			openChartEditor();
 		}
 
-		var mult:Float = FlxMath.lerp(1, iconPlayer1.scale.x, CoolUtil.boundTo(1 - (elapsed * 20 * playbackRate), 0, 1));
-		iconPlayer1.scale.set(mult, mult);
-		iconPlayer1.updateHitbox();
+		if (ClientPrefs.hudStyle == 'SB Engine') {
+			var mult:Float = FlxMath.lerp(1, iconPlayer1.scale.x, CoolUtil.boundTo(1 - (elapsed * 20), 0, 1));
+			iconPlayer1.scale.set(mult, mult);
+			iconPlayer1.updateHitbox();
 
-		var mult:Float = FlxMath.lerp(1, iconPlayer2.scale.x, CoolUtil.boundTo(1 - (elapsed * 20 * playbackRate), 0, 1));
-		iconPlayer2.scale.set(mult, mult);
-		iconPlayer2.updateHitbox();
+			var mult:Float = FlxMath.lerp(1, iconPlayer2.scale.x, CoolUtil.boundTo(1 - (elapsed * 20), 0, 1));
+			iconPlayer2.scale.set(mult, mult);
+			iconPlayer2.updateHitbox();
+		}
+		if (ClientPrefs.hudStyle == 'Psych Engine') {
+			var mult:Float = FlxMath.lerp(1, iconPlayer1.scale.x, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1));
+			iconPlayer1.scale.set(mult, mult);
+			iconPlayer1.updateHitbox();
+
+			var mult:Float = FlxMath.lerp(1, iconPlayer2.scale.x, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1));
+			iconPlayer2.scale.set(mult, mult);
+			iconPlayer2.updateHitbox();
+		}
+		if (ClientPrefs.hudStyle == 'Better UI') {
+			var mult:Float = FlxMath.lerp(1, iconPlayer1.scale.x, CoolUtil.boundTo(1 - (elapsed * 30), 0, 1));
+			iconPlayer1.scale.set(mult, mult);
+			iconPlayer1.updateHitbox();
+
+			var mult:Float = FlxMath.lerp(1, iconPlayer2.scale.x, CoolUtil.boundTo(1 - (elapsed * 30), 0, 1));
+			iconPlayer2.scale.set(mult, mult);
+			iconPlayer2.updateHitbox();
+		}
 
 		var iconOffset:Int = 26;
 

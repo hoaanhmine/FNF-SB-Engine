@@ -97,8 +97,15 @@ class CreditsState extends MusicBeatState {
 				'800080'
 			],
 			[
+				'Nurry',
+				'nury',
+				'Artist for SB Engine',
+				'https://youtube.com/@Nuury06',
+				'8A8AFF'
+			],
+			[
 				'MaysLastPlays',
-				'mayslastplay',
+				'mays',
 				'Collaborator of SB Engine',
 				'https://www.youtube.com/channel/UCjTi9Hfl1Eb5Bgk5gksmsbA',
 				'5E99DF'
@@ -125,13 +132,6 @@ class CreditsState extends MusicBeatState {
 				'Main Artist/Animator of Psych Engine',
 				'https://twitter.com/RiverOaken',
 				'B42F71'
-			],
-			[
-				'shubs',
-				'shubs',
-				'Additional Programmer of Psych Engine',
-				'https://twitter.com/yoshubs',
-				'5E99DF'
 			],
 			[''],
 			['Former Engine Members'],
