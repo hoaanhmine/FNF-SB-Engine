@@ -42,6 +42,10 @@ class GameplaySettingsSubState extends BaseOptionsMenu {
 		var option:Option = new Option('Note Splashes', "If unchecked, hitting \"Sick!\" notes won't show particles.", 'noteSplashes', 'bool', true);
 		addOption(option);
 
+		var option:Option = new Option('Opponent note glow', "If unchecked, when opponent hit note its not gonna show glow.", 'opponentArrowGlow', 'bool',
+			true);
+		addOption(option);
+
 		var option:Option = new Option('Hide HUD', 'If checked, hides most HUD elements.', 'hideHud', 'bool', false);
 		addOption(option);
 
@@ -80,16 +84,8 @@ class GameplaySettingsSubState extends BaseOptionsMenu {
 			'bool', true);
 		addOption(option);
 
-		var option:Option = new Option('SB Engine icon bounce', "If checked, you have SB Engine icon bounce.\nCredits: notweuz (Creator of OS Engine.)",
-			'iconBounce', 'bool', true);
-		addOption(option);
-
 		var option:Option = new Option('Results screen',
 			"If checked, you will have results screen about your rating, accruracy and rating name when you finish the song.", 'resultsScreen', 'bool', false);
-		addOption(option);
-
-		var option:Option = new Option('SB Engine timebar style',
-			"If checked, you will have SB Engine time bar.\nIf unchecked, you will have basic Psych Engine timebar style", 'sbEngineTimeBar', 'bool', true);
 		addOption(option);
 
 		var option:Option = new Option('Combo Stacking',
@@ -104,10 +100,6 @@ class GameplaySettingsSubState extends BaseOptionsMenu {
 
 		var option:Option = new Option('Time Bar:', "What should the Time Bar display?", 'timeBarType', 'string', 'Time Left',
 			['Time Left', 'Time Elapsed', 'Song Name', 'Disabled']);
-		addOption(option);
-
-		var option:Option = new Option('HUD type:', "What should the HUD on game you want to look like?", 'hudStyle', 'string', 'SB Engine',
-			['SB Engine', 'Psych Engine', 'Better UI']);
 		addOption(option);
 
 		var option:Option = new Option('Health Bar Transparency', 'How much transparent should the health bar and icons be.', 'healthBarAlpha', 'percent', 1);

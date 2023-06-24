@@ -10,7 +10,7 @@ class ClientPrefs {
 	public static var downScroll:Bool = false;
 	public static var middleScroll:Bool = false;
 	public static var opponentStrums:Bool = true;
-	public static var showFPS:Bool = #if android false #else true #end;
+	public static var showFPS:Bool = true;
 	public static var rainbowFPS:Bool = false;
 	public static var memory:Bool = false;
 	public static var totalMemory:Bool = false;
@@ -20,6 +20,7 @@ class ClientPrefs {
 	public static var resultsScreen:Bool = false;
 	public static var globalAntialiasing:Bool = true;
 	public static var noteSplashes:Bool = true;
+	public static var opponentArrowGlow:Bool = true;
 	public static var lowQuality:Bool = false;
 	public static var shaders:Bool = true;
 	public static var velocityBackground:Bool = true;
@@ -35,8 +36,6 @@ class ClientPrefs {
 	public static var vibration:Bool = false;
 	public static var ghostTapping:Bool = true;
 	public static var timeBarType:String = 'Time Left';
-	public static var sbEngineTimeBar:Bool = true;
-	public static var iconBounce:Bool = true;
 	public static var colorblindMode:String = 'None';
 	public static var scoreZoom:Bool = true;
 	public static var noReset:Bool = false;
@@ -48,8 +47,9 @@ class ClientPrefs {
 	public static var comboStacking = true;
 	public static var hitboxSelection:String = 'Original';
 	public static var hitboxAlpha:Float = 0.2;
+	public static var virtualPadAlpha:Float = 0.5;
 	public static var mainMenuStyle:String = 'Original';
-	public static var hudStyle:String = 'SB Engine';
+	public static var gameStyle:String = 'SB Engine';
 	public static var objectEffects:Bool = true;
 	public static var gameplaySettings:Map<String, Dynamic> = [
 		'scrollspeed' => 1.0,
@@ -112,6 +112,7 @@ class ClientPrefs {
 		FlxG.save.data.resultsScreen = resultsScreen;
 		FlxG.save.data.globalAntialiasing = globalAntialiasing;
 		FlxG.save.data.noteSplashes = noteSplashes;
+		FlxG.save.data.opponentArrowGlow = opponentArrowGlow;
 		FlxG.save.data.lowQuality = lowQuality;
 		FlxG.save.data.shaders = shaders;
 		FlxG.save.data.velocityBackground = velocityBackground;
@@ -126,13 +127,10 @@ class ClientPrefs {
 		FlxG.save.data.vibration = vibration;
 		FlxG.save.data.ghostTapping = ghostTapping;
 		FlxG.save.data.timeBarType = timeBarType;
-		FlxG.save.data.sbEngineTimeBar = sbEngineTimeBar;
 		FlxG.save.data.scoreZoom = scoreZoom;
 		FlxG.save.data.noReset = noReset;
 		FlxG.save.data.healthBarAlpha = healthBarAlpha;
 		FlxG.save.data.comboOffset = comboOffset;
-		FlxG.save.data.iconBounce = iconBounce;
-
 		FlxG.save.data.ratingOffset = ratingOffset;
 		FlxG.save.data.sickWindow = sickWindow;
 		FlxG.save.data.goodWindow = goodWindow;
@@ -145,8 +143,9 @@ class ClientPrefs {
 		FlxG.save.data.checkForUpdates = checkForUpdates;
 		FlxG.save.data.hitboxSelection = hitboxSelection;
 		FlxG.save.data.hitboxAlpha = hitboxAlpha;
+		FlxG.save.data.virtualPadAlpha = virtualPadAlpha;
 		FlxG.save.data.mainMenuStyle = mainMenuStyle;
-		FlxG.save.data.hudStyle = hudStyle;
+		FlxG.save.data.gameStyle = gameStyle;
 		FlxG.save.data.objectEffects = objectEffects;
 		FlxG.save.data.comboStacking = comboStacking;
 
@@ -205,6 +204,9 @@ class ClientPrefs {
 		if (FlxG.save.data.noteSplashes != null) {
 			noteSplashes = FlxG.save.data.noteSplashes;
 		}
+		if (FlxG.save.data.opponentArrowGlow != null) {
+			opponentArrowGlow = FlxG.save.data.opponentArrowGlow;
+		}
 		if (FlxG.save.data.lowQuality != null) {
 			lowQuality = FlxG.save.data.lowQuality;
 		}
@@ -223,9 +225,6 @@ class ClientPrefs {
 				FlxG.drawFramerate = framerate;
 				FlxG.updateFramerate = framerate;
 			}
-		}
-		if (FlxG.save.data.iconBounce != null) {
-			iconBounce = FlxG.save.data.iconBounce;
 		}
 		if (FlxG.save.data.camZooms != null) {
 			camZooms = FlxG.save.data.camZooms;
@@ -253,9 +252,6 @@ class ClientPrefs {
 		}
 		if (FlxG.save.data.timeBarType != null) {
 			timeBarType = FlxG.save.data.timeBarType;
-		}
-		if (FlxG.save.data.sbEngineTimeBar != null) {
-			sbEngineTimeBar = FlxG.save.data.sbEngineTimeBar;
 		}
 		if (FlxG.save.data.scoreZoom != null) {
 			scoreZoom = FlxG.save.data.scoreZoom;
@@ -300,11 +296,14 @@ class ClientPrefs {
 		if (FlxG.save.data.hitboxAlpha != null) {
 			hitboxAlpha = FlxG.save.data.hitboxAlpha;
 		}
+		if (FlxG.save.data.virtualPadAlpha != null) {
+			virtualPadAlpha = FlxG.save.data.virtualPadAlpha;
+		}
 		if (FlxG.save.data.mainMenuStyle != null) {
 			mainMenuStyle = FlxG.save.data.mainMenuStyle;
 		}
-		if (FlxG.save.data.hudStyle != null) {
-			hudStyle = FlxG.save.data.hudStyle;
+		if (FlxG.save.data.gameStyle != null) {
+			gameStyle = FlxG.save.data.gameStyle;
 		}
 		if (FlxG.save.data.objectEffects != null) {
 			objectEffects = FlxG.save.data.objectEffects;
@@ -347,12 +346,12 @@ class ClientPrefs {
 	public static function reloadControls() {
 		PlayerSettings.player1.controls.setKeyboardScheme(KeyboardScheme.Solo);
 
-		TitleState.muteKeys = copyKey(keyBinds.get('volume_mute'));
-		TitleState.volumeDownKeys = copyKey(keyBinds.get('volume_down'));
-		TitleState.volumeUpKeys = copyKey(keyBinds.get('volume_up'));
-		FlxG.sound.muteKeys = TitleState.muteKeys;
-		FlxG.sound.volumeDownKeys = TitleState.volumeDownKeys;
-		FlxG.sound.volumeUpKeys = TitleState.volumeUpKeys;
+		TitleScreenState.muteKeys = copyKey(keyBinds.get('volume_mute'));
+		TitleScreenState.volumeDownKeys = copyKey(keyBinds.get('volume_down'));
+		TitleScreenState.volumeUpKeys = copyKey(keyBinds.get('volume_up'));
+		FlxG.sound.muteKeys = TitleScreenState.muteKeys;
+		FlxG.sound.volumeDownKeys = TitleScreenState.volumeDownKeys;
+		FlxG.sound.volumeUpKeys = TitleScreenState.volumeUpKeys;
 	}
 
 	public static function copyKey(arrayToCopy:Array<FlxKey>):Array<FlxKey> {

@@ -29,8 +29,11 @@ class MainMenuState extends MusicBeatState {
 	public static var psychEngineVersion:String = '0.6.2';
 	public static var currentlySelected:Int = 0;
 
+	public static var firstStart:Bool = true;
+	public static var finishedFunnyMove:Bool = false;
+
 	var menuItems:FlxTypedGroup<FlxSprite>;
-	private var camGame:FlxCamera;
+	private var cameraGame:FlxCamera;
 
 	var optionSelect:Array<String> = ['story_mode', 'freeplay', #if MODS_ALLOWED 'mods', #end 'credits', 'options'];
 
@@ -64,10 +67,10 @@ class MainMenuState extends MusicBeatState {
 		#end
 		debugKeys = ClientPrefs.copyKey(ClientPrefs.keyBinds.get('debug_1'));
 
-		camGame = new FlxCamera();
+		cameraGame = new FlxCamera();
 
-		FlxG.cameras.reset(camGame);
-		FlxG.cameras.setDefaultDrawTarget(camGame, true);
+		FlxG.cameras.reset(cameraGame);
+		FlxG.cameras.setDefaultDrawTarget(cameraGame, true);
 
 		transIn = FlxTransitionableState.defaultTransIn;
 		transOut = FlxTransitionableState.defaultTransOut;
@@ -138,19 +141,67 @@ class MainMenuState extends MusicBeatState {
 			menuItem.scrollFactor.set();
 			menuItem.antialiasing = ClientPrefs.globalAntialiasing;
 			menuItem.updateHitbox();
+			if (firstStart)
+				FlxTween.tween(menuItem, {y: 60 + (i * 130)}, 1 + (i * 0.25), {
+					ease: FlxEase.expoInOut,
+					onComplete: function(flxTween:FlxTween) {
+						finishedFunnyMove = true;
+						changeItem();
+					}
+				});
+			else
+				menuItem.y = 60 + (i * 130);
 		}
 
-		versionSb = new FlxText(12, FlxG.height - 64, 0, "SB Engine v" + sbEngineVersion + " (Modified Psych Engine)", 16);
-		versionSb.scrollFactor.set();
-		versionSb.setFormat("Bahnschrift", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		firstStart = false;
+
+		FlxTween.tween(cameraGame, {zoom: 1}, 1.1, {ease: FlxEase.expoInOut});
+		FlxTween.tween(background, {angle: 0}, 1, {ease: FlxEase.quartInOut});
+
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			versionSb = new FlxText(12, FlxG.height - 64, 0, "SB Engine v" + sbEngineVersion + " (Modified Psych Engine)", 16);
+			versionSb.scrollFactor.set();
+			versionSb.setFormat("Bahnschrift", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+
+			versionPsych = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 16);
+			versionPsych.scrollFactor.set();
+			versionPsych.setFormat("Bahnschrift", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+
+			versionFnf = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 16);
+			versionFnf.scrollFactor.set();
+			versionFnf.setFormat("Bahnschrift", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			versionSb = new FlxText(12, FlxG.height - 64, 0, "SB Engine v" + sbEngineVersion + " (Modified Psych Engine)", 16);
+			versionSb.scrollFactor.set();
+			versionSb.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+
+			versionPsych = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 16);
+			versionPsych.scrollFactor.set();
+			versionPsych.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+
+			versionFnf = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 16);
+			versionFnf.scrollFactor.set();
+			versionFnf.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			versionSb = new FlxText(12, FlxG.height - 64, 0, "SB Engine v" + sbEngineVersion + " (Modified Psych Engine)", 16);
+			versionSb.scrollFactor.set();
+			versionSb.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+
+			versionPsych = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 16);
+			versionPsych.scrollFactor.set();
+			versionPsych.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+
+			versionFnf = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 16);
+			versionFnf.scrollFactor.set();
+			versionFnf.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
 		add(versionSb);
-		versionPsych = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 16);
-		versionPsych.scrollFactor.set();
-		versionPsych.setFormat("Bahnschrift", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionPsych);
-		versionFnf = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 16);
-		versionFnf.scrollFactor.set();
-		versionFnf.setFormat("Bahnschrift", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionFnf);
 
 		sbEngineLogo = new FlxSprite(-130, 120).loadGraphic(Paths.image('sbEngineLogo'));
@@ -205,7 +256,7 @@ class MainMenuState extends MusicBeatState {
 			if (controls.BACK) {
 				selectedSomething = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
-				MusicBeatState.switchState(new TitleState());
+				MusicBeatState.switchState(new TitleScreenState());
 			}
 
 			if (controls.ACCEPT) {
@@ -216,6 +267,8 @@ class MainMenuState extends MusicBeatState {
 					FlxFlicker.flicker(purple, 1.1, 0.15, false);
 
 				menuItems.forEach(function(spr:FlxSprite) {
+					FlxTween.tween(cameraGame, {zoom: 10}, 1.6, {ease: FlxEase.expoIn});
+					FlxTween.tween(background, {angle: 90}, 1.6, {ease: FlxEase.expoIn});
 					if (currentlySelected != spr.ID) {
 						FlxTween.tween(spr, {x: 1200}, 2, {
 							ease: FlxEase.backInOut,

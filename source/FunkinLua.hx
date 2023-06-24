@@ -1552,25 +1552,27 @@ class FunkinLua {
 			}
 		});
 
-		Lua_helper.add_callback(lua, "addWavyShader", function(tag:String, wavyType:String) {
-			if (PlayState.instance.modchartSprites.exists(tag)) {
-				var shit:ModchartSprite = PlayState.instance.modchartSprites.get(tag);
-				switch (wavyType) {
-					case "FLAG":
-						shit.shader = PlayState.the3DWorldEffectFlag.shader;
-					case "DREAMY":
-						shit.shader = PlayState.the3DWorldEffectDreamy.shader;
-					case "HEAT_WAVE_HORIZONTAL":
-						shit.shader = PlayState.the3DWorldEffectHeatWaveHor.shader;
-					case "HEAT_WAVE_VERTICAL":
-						shit.shader = PlayState.the3DWorldEffectHeatWaveVer.shader;
-					case "WAVY":
-						shit.shader = PlayState.the3DWorldEffectWavy.shader;
-					default:
-						shit.shader = PlayState.the3DWorldEffectWavy.shader;
+		if (ClientPrefs.shaders == true) {
+		    Lua_helper.add_callback(lua, "addWiggleEffect", function(tag:String, wavyType:String) {
+				if (PlayState.instance.modchartSprites.exists(tag)) {
+					var wiggleEffectValue:ModchartSprite = PlayState.instance.modchartSprites.get(tag);
+					switch (wavyType) {
+						case "flagEffect":
+							wiggleEffectValue.shader = PlayState.theWiggleFlagEffect.shader;
+						case "dreamyEffect":
+							wiggleEffectValue.shader = PlayState.theWiggleDreamyEffect.shader;
+						case "heatWaveHorizontalEffect":
+							wiggleEffectValue.shader = PlayState.theWiggleHorizontalWaveHeatEffect.shader;
+						case "heatWaveVerticalEffect":
+							wiggleEffectValue.shader = PlayState.theWiggleVerticalWaveHeatEffect.shader;
+						case "wavyEffect":
+							wiggleEffectValue.shader = PlayState.theWiggleWavyEffect.shader;
+						default:
+							wiggleEffectValue.shader = PlayState.theWiggleWavyEffect.shader;
+					}
 				}
-			}
-		});
+			});
+		}
 
 		Lua_helper.add_callback(lua, "setGraphicSize", function(obj:String, x:Int, y:Int = 0, updateHitbox:Bool = true) {
 			if (PlayState.instance.getLuaObject(obj) != null) {
@@ -2986,7 +2988,15 @@ class ModchartText extends FlxText {
 
 	public function new(x:Float, y:Float, text:String, width:Float) {
 		super(x, y, width, text, 16);
-		setFormat(Paths.font("bahnschrift.ttf"), 16, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			setFormat(Paths.font("bahnschrift.ttf"), 17, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
 		cameras = [PlayState.instance.camHUD];
 		scrollFactor.set();
 		borderSize = 2;

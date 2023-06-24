@@ -81,6 +81,9 @@ class OptionsState extends MusicBeatState {
 	var velocityBG:FlxBackdrop;
 
 	override function create() {
+		Paths.clearStoredMemory();
+		Paths.clearUnusedMemory();
+
 		#if desktop
 		DiscordClient.changePresence("Options Menu", null);
 		#end
@@ -118,16 +121,44 @@ class OptionsState extends MusicBeatState {
 		add(selectorRight);
 
 		#if android
-		tipText = new FlxText(10, FlxG.height - 24, 0, 'Press X to customize your android controls!', 16);
-		tipText.setFormat("Bahnschrift", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		tipText.borderSize = 1.25;
-		tipText.scrollFactor.set();
-		add(tipText);
-		tipText = new FlxText(10, FlxG.height - 44, 0, 'Press Y to customize your hitbox mode!', 16);
-		tipText.setFormat("Bahnschrift", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		tipText.borderSize = 1.25;
-		tipText.scrollFactor.set();
-		add(tipText);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			tipText = new FlxText(10, FlxG.height - 24, 0, 'Press X to customize your android controls!', 16);
+			tipText.setFormat("Bahnschrift", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			tipText.borderSize = 1.25;
+			tipText.scrollFactor.set();
+			add(tipText);
+			tipText = new FlxText(10, FlxG.height - 44, 0, 'Press Y to customize your opacity for hitbox, virtual pads and hitbox style!', 16);
+			tipText.setFormat("Bahnschrift", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			tipText.borderSize = 1.25;
+			tipText.scrollFactor.set();
+			add(tipText);
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			tipText = new FlxText(10, FlxG.height - 24, 0, 'Press X to customize your android controls!', 16);
+			tipText.setFormat("VCR OSD Mono", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			tipText.borderSize = 1.25;
+			tipText.scrollFactor.set();
+			add(tipText);
+			tipText = new FlxText(10, FlxG.height - 44, 0, 'Press Y to customize your opacity for hitbox, virtual pads and hitbox style!', 16);
+			tipText.setFormat("VCR OSD Mono", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			tipText.borderSize = 1.25;
+			tipText.scrollFactor.set();
+			add(tipText);
+		}
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			tipText = new FlxText(10, FlxG.height - 24, 0, 'Press X to customize your android controls!', 16);
+			tipText.setFormat("VCR OSD Mono", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			tipText.borderSize = 1.25;
+			tipText.scrollFactor.set();
+			add(tipText);
+			tipText = new FlxText(10, FlxG.height - 44, 0, 'Press Y to customize your opacity for hitbox, virtual pads and hitbox style!', 16);
+			tipText.setFormat("VCR OSD Mono", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			tipText.borderSize = 1.25;
+			tipText.scrollFactor.set();
+			add(tipText);
+		}
 		#end
 
 		changeSelection();
@@ -135,7 +166,7 @@ class OptionsState extends MusicBeatState {
 
 		#if android
 		addVirtualPad(UP_DOWN, A_B_X_Y);
-		virtualPad.y = -48;
+		virtualPad.y = -44;
 		#end
 
 		super.create();
@@ -184,7 +215,7 @@ class OptionsState extends MusicBeatState {
 			#if android
 			removeVirtualPad();
 			#end
-			openSubState(new android.AndroidHitboxSelectorSubState());
+			openSubState(new android.AndroidControlsSettingsSubState());
 		}
 		#end
 	}

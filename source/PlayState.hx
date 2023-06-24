@@ -78,18 +78,7 @@ class PlayState extends MusicBeatState {
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
 
-	public static var ratingStuff:Array<Dynamic> = [
-		['You are gonna die!', 0.2], // From 0% to 19%
-		['Freak', 0.4], // From 20% to 39%
-		['Really bad', 0.5], // From 40% to 49%
-		['Bad', 0.6], // From 50% to 59%
-		['Nice', 0.69], // From 60% to 68%
-		['Epic', 0.7], // 69%
-		['Good', 0.8], // From 70% to 79%
-		['Very good', 0.9], // From 80% to 89%
-		['Sick!', 1], // From 90% to 99%
-		['Perfect!!', 1] // The value on this one isn't used actually, since Perfect is always "1"
-	];
+	public static var ratingStuff:Array<Dynamic> = [];
 
 	// event variables
 	private var isCameraOnForcedPos:Bool = false;
@@ -195,6 +184,8 @@ class PlayState extends MusicBeatState {
 	public var goods:Int = 0;
 	public var bads:Int = 0;
 	public var freaks:Int = 0;
+	public var nps:Int = 0;
+	public var maximumNPS:Int = 0;
 
 	private var generatedMusic:Bool = false;
 
@@ -221,11 +212,11 @@ class PlayState extends MusicBeatState {
 	public var autoplaySine:Float = 0;
 	public var autoplayTxt:FlxText;
 
-	public static var the3DWorldEffectFlag:WiggleEffect;
-	public static var the3DWorldEffectHeatWaveHor:WiggleEffect;
-	public static var the3DWorldEffectWavy:WiggleEffect;
-	public static var the3DWorldEffectHeatWaveVer:WiggleEffect;
-	public static var the3DWorldEffectDreamy:WiggleEffect;
+	public static var theWiggleFlagEffect:WiggleEffect;
+	public static var theWiggleHorizontalWaveHeatEffect:WiggleEffect;
+	public static var theWiggleWavyEffect:WiggleEffect;
+	public static var theWiggleVerticalWaveHeatEffect:WiggleEffect;
+	public static var theWiggleDreamyEffect:WiggleEffect;
 
 	public var iconPlayer1:HealthIcon;
 	public var iconPlayer2:HealthIcon;
@@ -233,6 +224,8 @@ class PlayState extends MusicBeatState {
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
 	public var cameraSpeed:Float = 1;
+
+	var notesHitArray:Array<Date> = [];
 
 	var dialogue:Array<String> = ['blah blah blah', 'coolswag'];
 	var dialogueJson:DialogueFile = null;
@@ -271,7 +264,7 @@ class PlayState extends MusicBeatState {
 	var santa:BGSprite;
 	var heyTimer:Float;
 
-	var iconBounce:Bool = false;
+	var iconBounceAngle:Bool = false;
 
 	var bgGirls:BackgroundGirls;
 	var bgGhouls:BGSprite;
@@ -290,6 +283,12 @@ class PlayState extends MusicBeatState {
 
 	var timeTxt:FlxText;
 	var scoreTxtTween:FlxTween;
+
+	var allNotesMs:Float = 0;
+	var averageMs:Float = 0;
+
+	public var msScoreLabel:FlxText;
+	public var msScoreLabelTween:FlxTween;
 
 	public static var campaignScore:Int = 0;
 	public static var campaignMisses:Int = 0;
@@ -350,6 +349,8 @@ class PlayState extends MusicBeatState {
 	// stores the last combo score objects in an array
 	public static var lastScore:Array<FlxSprite> = [];
 
+	var healthCounter:Float;
+
 	override public function create() {
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
@@ -392,40 +393,85 @@ class PlayState extends MusicBeatState {
 		rating.noteSplash = false;
 		ratingsData.push(rating);
 
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			ratingStuff = [
+				['You are gonna die!', 0.2], // From 0% to 19%
+                ['Freak', 0.4], // From 20% to 39%
+                ['Really bad', 0.5], // From 40% to 49%
+                ['Bad', 0.6], // From 50% to 59%
+                ['Nice', 0.69], // From 60% to 68%
+                ['Epic', 0.7], // 69%
+                ['Good', 0.8], // From 70% to 79%
+                ['Very good', 0.9], // From 80% to 89%
+                ['Sick!', 1], // From 90% to 99%
+                ['Perfect!!', 1] // The value on this one isn't used actually, since Perfect is always "1"
+		];
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			ratingStuff = [
+			    ['You Suck!', 0.2], //From 0% to 19%
+				['####', 0.4], //From 20% to 39%
+				['Bad', 0.5], //From 40% to 49%
+				['Bruh', 0.6], //From 50% to 59%
+				['Meh', 0.69], //From 60% to 68%
+				['Nice', 0.7], //69%
+				['Good', 0.8], //From 70% to 79%
+				['Great', 0.9], //From 80% to 89%
+				['Sick!', 1], //From 90% to 99%
+				['Perfect!!', 1] //The value on this one isn't used actually, since Perfect is always "1"
+		];
+		}
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			ratingStuff = [
+				['F', 0.2], //From 0% to 19%
+				['E', 0.4], //From 20% to 39%
+				['D', 0.5], //From 40% to 49%
+				['C', 0.6], //From 50% to 59%
+				['B', 0.69], //From 60% to 68%
+				['A', 0.7], //69%
+				['AA', 0.8], //From 70% to 79%
+				['AAA', 0.9], //From 80% to 89%
+				['AAAA', 1], //From 90% to 99%
+				['AAAAA', 1] //The value on this one isn't used actually, since Perfect is always "1"
+		];
+		}
+
 		// For the "Just the Two of Us" achievement
 		for (i in 0...keysArray.length) {
 			keysPressed.push(false);
 		}
 
-		the3DWorldEffectFlag = new WiggleEffect();
-		the3DWorldEffectFlag.effectType = WiggleEffectType.FLAG;
-		the3DWorldEffectFlag.waveAmplitude = 0.1;
-		the3DWorldEffectFlag.waveFrequency = 5;
-		the3DWorldEffectFlag.waveSpeed = 2.25;
+		theWiggleFlagEffect = new WiggleEffect();
+		theWiggleFlagEffect.effectType = WiggleEffectType.FLAG;
+		theWiggleFlagEffect.waveAmplitude = 0.1;
+		theWiggleFlagEffect.waveFrequency = 5;
+		theWiggleFlagEffect.waveSpeed = 2.25;
 
-		the3DWorldEffectHeatWaveHor = new WiggleEffect();
-		the3DWorldEffectHeatWaveHor.effectType = WiggleEffectType.HEAT_WAVE_HORIZONTAL;
-		the3DWorldEffectHeatWaveHor.waveAmplitude = 0.1;
-		the3DWorldEffectHeatWaveHor.waveFrequency = 5;
-		the3DWorldEffectHeatWaveHor.waveSpeed = 2.25;
+		theWiggleHorizontalWaveHeatEffect = new WiggleEffect();
+		theWiggleHorizontalWaveHeatEffect.effectType = WiggleEffectType.HEAT_WAVE_HORIZONTAL;
+		theWiggleHorizontalWaveHeatEffect.waveAmplitude = 0.1;
+		theWiggleHorizontalWaveHeatEffect.waveFrequency = 5;
+		theWiggleHorizontalWaveHeatEffect.waveSpeed = 2.25;
 
-		the3DWorldEffectHeatWaveVer = new WiggleEffect();
-		the3DWorldEffectHeatWaveVer.effectType = WiggleEffectType.HEAT_WAVE_VERTICAL;
-		the3DWorldEffectHeatWaveVer.waveAmplitude = 0.1;
-		the3DWorldEffectHeatWaveVer.waveFrequency = 5;
-		the3DWorldEffectHeatWaveVer.waveSpeed = 2.25;
+		theWiggleVerticalWaveHeatEffect = new WiggleEffect();
+		theWiggleVerticalWaveHeatEffect.effectType = WiggleEffectType.HEAT_WAVE_VERTICAL;
+		theWiggleVerticalWaveHeatEffect.waveAmplitude = 0.1;
+		theWiggleVerticalWaveHeatEffect.waveFrequency = 5;
+		theWiggleVerticalWaveHeatEffect.waveSpeed = 2.25;
 
-		the3DWorldEffectDreamy = new WiggleEffect();
-		the3DWorldEffectDreamy.effectType = WiggleEffectType.DREAMY;
-		the3DWorldEffectDreamy.waveAmplitude = 0.1;
-		the3DWorldEffectDreamy.waveFrequency = 5;
-		the3DWorldEffectDreamy.waveSpeed = 2.25;
+		theWiggleDreamyEffect = new WiggleEffect();
+		theWiggleDreamyEffect.effectType = WiggleEffectType.DREAMY;
+		theWiggleDreamyEffect.waveAmplitude = 0.1;
+		theWiggleDreamyEffect.waveFrequency = 5;
+		theWiggleDreamyEffect.waveSpeed = 2.25;
 
-		the3DWorldEffectWavy = new WiggleEffect();
-		the3DWorldEffectWavy.effectType = WiggleEffectType.WAVY;
-		the3DWorldEffectWavy.waveAmplitude = 0.2;
-		the3DWorldEffectWavy.waveFrequency = 3;
-		the3DWorldEffectWavy.waveSpeed = 1.25;
+		theWiggleWavyEffect = new WiggleEffect();
+		theWiggleWavyEffect.effectType = WiggleEffectType.WAVY;
+		theWiggleWavyEffect.waveAmplitude = 0.2;
+		theWiggleWavyEffect.waveFrequency = 3;
+		theWiggleWavyEffect.waveSpeed = 1.25;
 
 		if (FlxG.sound.music != null)
 			FlxG.sound.music.stop();
@@ -1044,7 +1090,18 @@ class PlayState extends MusicBeatState {
 
 		var showTime:Bool = (ClientPrefs.timeBarType != 'Disabled');
 		timeTxt = new FlxText(STRUM_X + (FlxG.width / 2) - 248, 19, 400, "", 32);
-		timeTxt.setFormat(Paths.font("bahnschrift.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			timeTxt.setFormat(Paths.font("bahnschrift.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			timeTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			timeTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
 		timeTxt.scrollFactor.set();
 		timeTxt.alpha = 0;
 		timeTxt.borderSize = 2;
@@ -1057,26 +1114,26 @@ class PlayState extends MusicBeatState {
 		}
 		updateTime = showTime;
 
-		if (ClientPrefs.hudStyle == 'SB Engine') {
+		if (ClientPrefs.gameStyle == 'SB Engine') {
 			timeBarBG = new AttachedSprite('sbEngineTimeBar');
 			timeBarBG.x = timeTxt.x;
 			timeBarBG.y = timeTxt.y + (timeTxt.height / 4);
 			timeBarBG.scrollFactor.set();
 			timeBarBG.screenCenter(X);
 		}
-		if (ClientPrefs.hudStyle == 'Psych Engine') {
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
 			timeBarBG = new AttachedSprite('timeBar');
 			timeBarBG.x = timeTxt.x;
 			timeBarBG.y = timeTxt.y + (timeTxt.height / 4);
 			timeBarBG.scrollFactor.set();
 		}
-		if (ClientPrefs.hudStyle == 'Better UI') {
-			timeBarBG = new AttachedSprite('longTimeBar');
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			timeBarBG = new AttachedSprite('longBar');
 			timeBarBG.x = timeTxt.x;
 			timeBarBG.y = timeTxt.y + (timeTxt.height / 4);
 			timeBarBG.scrollFactor.set();
 			timeBarBG.screenCenter(X);
-			insert(members.indexOf(timeBarBG), timeBar);
+			timeBarBG.sprTracker = timeBar;
 		}
 		timeBarBG.alpha = 0;
 		timeBarBG.visible = showTime;
@@ -1088,11 +1145,14 @@ class PlayState extends MusicBeatState {
 		timeBar = new FlxBar(timeBarBG.x + 4, timeBarBG.y + 4, LEFT_TO_RIGHT, Std.int(timeBarBG.width - 8), Std.int(timeBarBG.height - 8), this,
 			'songPercent', 0, 1);
 		timeBar.scrollFactor.set();
-		if (ClientPrefs.hudStyle == 'SB Engine') {
+		if (ClientPrefs.gameStyle == 'SB Engine') {
 			timeBar.createFilledBar(0xFF000000, 0xFF800080);
 		}
-		if (ClientPrefs.hudStyle == 'Psych Engine') {
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
 			timeBar.createFilledBar(0xFF000000, 0xFFFFFFFF);
+		}
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			insert(members.indexOf(timeBarBG), timeBar);
 		}
 		timeBar.numDivisions = 800;
 		timeBar.alpha = 0;
@@ -1173,9 +1233,21 @@ class PlayState extends MusicBeatState {
 		FlxG.fixedTimestep = false;
 		moveCameraSection();
 
-		healthBarBG = new AttachedSprite('healthBar');
-		healthBarBG.y = FlxG.height * 0.89;
-		healthBarBG.screenCenter(X);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			healthBarBG = new AttachedSprite('healthBar');
+			healthBarBG.y = FlxG.height * 0.89;
+			healthBarBG.screenCenter(X);
+		}
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			healthBarBG = new AttachedSprite('healthBar');
+			healthBarBG.y = FlxG.height * 0.89;
+			healthBarBG.screenCenter(X);
+		}
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			healthBarBG = new AttachedSprite('longBar');
+			healthBarBG.y = FlxG.height * 0.89;
+			healthBarBG.screenCenter(X);
+		}
 		healthBarBG.scrollFactor.set();
 		healthBarBG.visible = !ClientPrefs.hideHud;
 		healthBarBG.xAdd = -4;
@@ -1184,10 +1256,20 @@ class PlayState extends MusicBeatState {
 		if (ClientPrefs.downScroll)
 			healthBarBG.y = 0.11 * FlxG.height;
 
-		healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
-			'health', 0, 2);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
+				'health', 0, 2);
+		}
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
+				'health', 0, 2);
+		}
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			healthBar = new FlxBar(healthBarBG.x + 4, healthBarBG.y + 4, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), this,
+				'health', 0, 2);
+			insert(members.indexOf(healthBarBG), healthBar);
+		}
 		healthBar.scrollFactor.set();
-		// healthBar
 		healthBar.visible = !ClientPrefs.hideHud;
 		healthBar.alpha = ClientPrefs.healthBarAlpha;
 		add(healthBar);
@@ -1206,7 +1288,7 @@ class PlayState extends MusicBeatState {
 		add(iconPlayer2);
 		reloadHealthBarColors();
 
-		if (ClientPrefs.hudStyle == 'SB Engine') {
+		if (ClientPrefs.gameStyle == 'SB Engine') {
 			scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
 			scoreTxt.setFormat(Paths.font("bahnschrift.ttf"), 17, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			scoreTxt.scrollFactor.set();
@@ -1214,35 +1296,61 @@ class PlayState extends MusicBeatState {
 			scoreTxt.visible = !ClientPrefs.hideHud;
 			add(scoreTxt);
 		}
-		if (ClientPrefs.hudStyle == 'Psych Engine') {
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
 			scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
-			scoreTxt.setFormat(Paths.font("bahnschrift.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			scoreTxt.scrollFactor.set();
 			scoreTxt.borderSize = 1.25;
 			scoreTxt.visible = !ClientPrefs.hideHud;
 			add(scoreTxt);
 		}
-		if (ClientPrefs.hudStyle == 'Better UI') {
+		if (ClientPrefs.gameStyle == 'Better UI') {
 			scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
-			scoreTxt.setFormat(Paths.font("bahnschrift.ttf"), 17, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			scoreTxt.setFormat(Paths.font("vcr.ttf"), 17, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			scoreTxt.scrollFactor.set();
 			scoreTxt.visible = !ClientPrefs.hideHud;
 			add(scoreTxt);
 		}
 
-		judgementCounterTxt = new FlxText(25, 0, FlxG.width, "", 20);
-		judgementCounterTxt.setFormat(Paths.font("bahnschrift.ttf"), 20, FlxColor.WHITE, FlxTextAlign.LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			judgementCounterTxt = new FlxText(25, 0, FlxG.width, "", 20);
+			judgementCounterTxt.setFormat(Paths.font("bahnschrift.ttf"), 20, FlxColor.WHITE, FlxTextAlign.LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nFreaks: ${freaks}';
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			judgementCounterTxt = new FlxText(25, 0, FlxG.width, "", 20);
+			judgementCounterTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, FlxTextAlign.LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\n####s: ${freaks}';
+		}
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			judgementCounterTxt = new FlxText(25, 0, FlxG.width, "", 20);
+			judgementCounterTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, FlxTextAlign.LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\n####s: ${freaks}';
+		}
+
 		judgementCounterTxt.borderSize = 2;
 		judgementCounterTxt.borderQuality = 2;
 		judgementCounterTxt.scrollFactor.set();
 		judgementCounterTxt.size = 22;
 		judgementCounterTxt.screenCenter(Y);
 		judgementCounterTxt.visible = !ClientPrefs.hideJudgementCounter && !ClientPrefs.hideHud;
-		judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nFreaks: ${freaks}';
 		add(judgementCounterTxt);
 
 		watermarkTxt = new FlxText(12, FlxG.height - 24, 0, "", 8);
-		watermarkTxt.setFormat(Paths.font("bahnschrift.ttf"), 15, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			watermarkTxt.setFormat(Paths.font("bahnschrift.ttf"), 15, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			watermarkTxt.setFormat(Paths.font("vcr.ttf"), 15, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			watermarkTxt.setFormat(Paths.font("vcr.ttf"), 15, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		}
+
 		watermarkTxt.scrollFactor.set();
 		watermarkTxt.borderSize = 1.25;
 		watermarkTxt.visible = !ClientPrefs.hideWatermark && !ClientPrefs.hideHud;
@@ -1253,8 +1361,8 @@ class PlayState extends MusicBeatState {
 			+ MainMenuState.psychEngineVersion + ") ";
 		add(watermarkTxt);
 
-		if (ClientPrefs.hudStyle == 'SB Engine') {
-			autoplayTxt = new FlxText(400, timeBarBG.y + 500, FlxG.width - 800, "AUTOPLAY", 32);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			autoplayTxt = new FlxText(400, timeBarBG.y + 500, FlxG.width - 800, "[AUTOPLAY]", 32);
 			autoplayTxt.setFormat(Paths.font("bahnschrift.ttf"), 30, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			autoplayTxt.scrollFactor.set();
 			autoplayTxt.visible = cpuControlled;
@@ -1264,9 +1372,9 @@ class PlayState extends MusicBeatState {
 			}
 		}
 
-		if (ClientPrefs.hudStyle == 'Psych Engine') {
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
 			autoplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "BOTPLAY", 32);
-			autoplayTxt.setFormat(Paths.font("bahnschrift.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			autoplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			autoplayTxt.scrollFactor.set();
 			autoplayTxt.borderSize = 1.25;
 			autoplayTxt.visible = cpuControlled;
@@ -1276,9 +1384,9 @@ class PlayState extends MusicBeatState {
 			}
 		}
 
-		if (ClientPrefs.hudStyle == 'Better UI') {
+		if (ClientPrefs.gameStyle == 'Better UI') {
 			autoplayTxt = new FlxText(400, timeBarBG.y + 500, FlxG.width - 800, "[CpuControlled]", 32);
-			autoplayTxt.setFormat(Paths.font("bahnschrift.ttf"), 30, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			autoplayTxt.setFormat(Paths.font("vcr.ttf"), 30, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			autoplayTxt.scrollFactor.set();
 			autoplayTxt.visible = cpuControlled;
 			add(autoplayTxt);
@@ -1286,6 +1394,16 @@ class PlayState extends MusicBeatState {
 				autoplayTxt.y = timeBarBG.y - 500;
 			}
 		}
+
+		msScoreLabel = new FlxText(0, 0, 400, "", 32);
+		if (ClientPrefs.gameStyle == 'Better UI') {
+		    msScoreLabel.setFormat(Paths.font('vcr.ttf'), 32, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			msScoreLabel.visible = true;
+		}
+		msScoreLabel.alpha = 0;
+		msScoreLabel.scrollFactor.set();
+		msScoreLabel.borderSize = 2;
+		add( msScoreLabel);
 
 		strumLineNotes.cameras = [camHUD];
 		grpNoteSplashes.cameras = [camHUD];
@@ -1298,6 +1416,7 @@ class PlayState extends MusicBeatState {
 		iconPlayer2.cameras = [camHUD];
 		scoreTxt.cameras = [camHUD];
 		autoplayTxt.cameras = [camHUD];
+		msScoreLabel.cameras = [camHUD];
 		timeBar.cameras = [camHUD];
 		timeBarBG.cameras = [camHUD];
 		timeTxt.cameras = [camHUD];
@@ -1433,7 +1552,6 @@ class PlayState extends MusicBeatState {
 		}
 		RecalculateRating();
 
-		// PRECACHING MISS SOUNDS BECAUSE I THINK THEY CAN LAG PEOPLE AND freak THEM UP IDK HOW HAXE WORKS
 		if (ClientPrefs.hitsoundVolume > 0)
 			precacheList.set('hitsound', 'sound');
 		precacheList.set('missnote1', 'sound');
@@ -1527,8 +1645,8 @@ class PlayState extends MusicBeatState {
 		healthBar.createFilledBar(FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]),
 			FlxColor.fromRGB(boyfriend.healthColorArray[0], boyfriend.healthColorArray[1], boyfriend.healthColorArray[2]));
 
-		if (ClientPrefs.hudStyle == 'Better UI') {
-			timeBar.createFilledBar(0xFF121212, FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]));
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			timeBar.createFilledBar(0xFF000000, FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]));
 		}
 
 		healthBar.updateBar();
@@ -1905,6 +2023,21 @@ class PlayState extends MusicBeatState {
 
 			var swagCounter:Int = 0;
 
+			if (ClientPrefs.gameStyle == 'Better UI') {
+				if (ClientPrefs.downScroll) {
+					msScoreLabel.x = playerStrums.members[1].x-100;
+					msScoreLabel.y = playerStrums.members[1].y+100;
+				} else {
+					msScoreLabel.x = playerStrums.members[1].x-100;
+					msScoreLabel.y = playerStrums.members[1].y-50;
+				}
+
+				if (ClientPrefs.middleScroll) {
+					msScoreLabel.x = playerStrums.members[0].x-250;
+					msScoreLabel.y = playerStrums.members[1].y+30;
+				}
+			}
+
 			if (startOnTime < 0)
 				startOnTime = 0;
 
@@ -2086,12 +2219,13 @@ class PlayState extends MusicBeatState {
 	}
 
 	public function updateScore(miss:Bool = false) {
-		if (ClientPrefs.hudStyle == 'SB Engine') {
+		if (ClientPrefs.gameStyle == 'SB Engine') {
 			scoreTxt.text = 'Score: ' + songScore + ' | Combo breaks: ' + songMisses + ' | Accruracy: ' + Highscore.floorDecimal(ratingPercent * 100, 2)
 				+ '%' + ' | ' + ratingName + ' [' + ratingFC + ']';
 			judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nFreaks: ${freaks}';
 		}
-		if (ClientPrefs.hudStyle == 'Psych Engine') {
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
 			scoreTxt.text = 'Score: '
 				+ songScore
 				+ ' | Misses: '
@@ -2099,10 +2233,14 @@ class PlayState extends MusicBeatState {
 				+ ' | Rating: '
 				+ ratingName
 				+ (ratingName != '?' ? ' (${Highscore.floorDecimal(ratingPercent * 100, 2)}%) - $ratingFC' : '');
+			judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\n####s: ${freaks}';
 		}
-		if (ClientPrefs.hudStyle == 'Better UI') {
-			scoreTxt.text = 'Score: ' + songScore + ' // Misses: ' + songMisses + ' // Accruracy: ' + Highscore.floorDecimal(ratingPercent * 100, 2) + '%'
-				+ ' // ' + ratingName + ' (' + ratingFC + ')';
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			scoreTxt.text = 'NPS: ' + nps + ' | Average: ' + Math.round(averageMs) + 'ms'
+			+ ' // Health: ${Std.string(Math.floor(Std.parseFloat(Std.string((healthCounter) / 2))))} %' + ' // Score: ' + songScore + ' // Misses: ' + songMisses + ' // Accruracy: '
+				+ Highscore.floorDecimal(ratingPercent * 100, 2) + '%' + ' // ' + ratingName + ' (' + ratingFC + ')';
+			judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\n####s: ${freaks}';
 		}
 
 		if (ClientPrefs.scoreZoom && !miss && !cpuControlled) {
@@ -2629,11 +2767,11 @@ class PlayState extends MusicBeatState {
 	override public function update(elapsed:Float) {
 		callOnLuas('onUpdate', [elapsed]);
 
-		the3DWorldEffectFlag.update(elapsed);
-		the3DWorldEffectHeatWaveHor.update(elapsed);
-		the3DWorldEffectHeatWaveVer.update(elapsed);
-		the3DWorldEffectDreamy.update(elapsed);
-		the3DWorldEffectWavy.update(elapsed);
+		theWiggleFlagEffect.update(elapsed);
+		theWiggleHorizontalWaveHeatEffect.update(elapsed);
+		theWiggleVerticalWaveHeatEffect.update(elapsed);
+		theWiggleDreamyEffect.update(elapsed);
+		theWiggleWavyEffect.update(elapsed);
 
 		switch (currentlyStage) {
 			case 'tank':
@@ -2782,14 +2920,41 @@ class PlayState extends MusicBeatState {
 			}
 		}
 
+		{
+			var valueNoteHit = notesHitArray.length-1;
+			while (valueNoteHit >= 0)
+			{
+				var npsCounter:Date = notesHitArray[valueNoteHit];
+				if (npsCounter != null && npsCounter.getTime() + 1000 / playbackRate < Date.now().getTime())
+					notesHitArray.remove(npsCounter);
+				else
+					valueNoteHit = 0;
+				valueNoteHit--;
+			}
+			nps = notesHitArray.length;
+			if (nps > maximumNPS)
+				maximumNPS = nps;
+		}
+
+		healthCounter = health * 100;
+
 		super.update(elapsed);
 
 		setOnLuas('curDecStep', curDecStep);
 		setOnLuas('curDecBeat', curDecBeat);
 
-		if (autoplayTxt.visible) {
-			autoplaySine += 180 * elapsed;
-			autoplayTxt.alpha = 1 - Math.sin((Math.PI * autoplaySine) / 180);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			if (autoplayTxt.visible) {
+				autoplaySine += 120 * elapsed;
+				autoplayTxt.alpha = 1 - Math.sin((Math.PI * autoplaySine) / 120);
+			}
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			if (autoplayTxt.visible) {
+				autoplaySine += 180 * elapsed;
+				autoplayTxt.alpha = 1 - Math.sin((Math.PI * autoplaySine) / 180);
+			}
 		}
 
 		if (controls.PAUSE #if android || FlxG.android.justReleased.BACK #end && startedCountdown && canPause) {
@@ -2803,7 +2968,7 @@ class PlayState extends MusicBeatState {
 			openChartEditor();
 		}
 
-		if (ClientPrefs.hudStyle == 'SB Engine') {
+		if (ClientPrefs.gameStyle == 'SB Engine') {
 			var mult:Float = FlxMath.lerp(1, iconPlayer1.scale.x, CoolUtil.boundTo(1 - (elapsed * 20), 0, 1));
 			iconPlayer1.scale.set(mult, mult);
 			iconPlayer1.updateHitbox();
@@ -2812,7 +2977,7 @@ class PlayState extends MusicBeatState {
 			iconPlayer2.scale.set(mult, mult);
 			iconPlayer2.updateHitbox();
 		}
-		if (ClientPrefs.hudStyle == 'Psych Engine') {
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
 			var mult:Float = FlxMath.lerp(1, iconPlayer1.scale.x, CoolUtil.boundTo(1 - (elapsed * 9), 0, 1));
 			iconPlayer1.scale.set(mult, mult);
 			iconPlayer1.updateHitbox();
@@ -2821,7 +2986,7 @@ class PlayState extends MusicBeatState {
 			iconPlayer2.scale.set(mult, mult);
 			iconPlayer2.updateHitbox();
 		}
-		if (ClientPrefs.hudStyle == 'Better UI') {
+		if (ClientPrefs.gameStyle == 'Better UI') {
 			var mult:Float = FlxMath.lerp(1, iconPlayer1.scale.x, CoolUtil.boundTo(1 - (elapsed * 30), 0, 1));
 			iconPlayer1.scale.set(mult, mult);
 			iconPlayer1.updateHitbox();
@@ -3102,14 +3267,6 @@ class PlayState extends MusicBeatState {
 		persistentDraw = true;
 		paused = true;
 
-		// 1 / 1000 chance for Gitaroo Man easter egg
-		/*if (FlxG.random.bool(0.1))
-		{
-			// gitaroo man easter egg
-			cancelMusicFadeTween();
-			MusicBeatState.switchState(new GitarooPause());
-		}
-		else { */
 		if (FlxG.sound.music != null) {
 			FlxG.sound.music.pause();
 			vocals.pause();
@@ -3794,7 +3951,7 @@ class PlayState extends MusicBeatState {
 						ratingName + (' [' + ratingFC + '] ')));
 				else
 					MusicBeatState.switchState(new FreeplayState());
-				FlxG.sound.playMusic(Paths.music('tea-time'), 0.5);
+				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				changedDifficulty = false;
 			}
 			transitioning = true;
@@ -3842,7 +3999,22 @@ class PlayState extends MusicBeatState {
 
 	private function popUpScore(note:Note = null):Void {
 		var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition + ClientPrefs.ratingOffset);
-		// trace(noteDiff, ' ' + Math.abs(note.strumTime - Conductor.songPosition));
+		allNotesMs += noteDiff;
+		averageMs = allNotesMs/songHits;
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			msScoreLabel.alpha = 1;
+			msScoreLabel.text =Std.string(Math.round(noteDiff)) + "ms";
+			if (msScoreLabelTween != null){
+				msScoreLabelTween.cancel(); msScoreLabelTween.destroy(); // top 10 awesome code
+			}
+			msScoreLabelTween = FlxTween.tween(msScoreLabel, {alpha: 0}, 0.25, {
+				onComplete: function(tw:FlxTween) {msScoreLabelTween = null;}, startDelay: 0.7
+			});
+			if (noteDiff >= ClientPrefs.sickWindow) msScoreLabel.color = FlxColor.LIME;
+			if (noteDiff >= ClientPrefs.goodWindow) msScoreLabel.color = FlxColor.ORANGE;
+			if (noteDiff >= ClientPrefs.badWindow) msScoreLabel.color = FlxColor.RED;
+			if (!msScoreLabel.visible) msScoreLabel.color = FlxColor.PURPLE;
+		}
 
 		// boyfriend.playAnim('hey');
 		vocals.volume = 1;
@@ -4338,7 +4510,9 @@ class PlayState extends MusicBeatState {
 		if (note.isSustainNote && !note.animation.curAnim.name.endsWith('end')) {
 			time += 0.15;
 		}
-		StrumPlayAnim(true, Std.int(Math.abs(note.noteData)), time);
+		if (ClientPrefs.opponentArrowGlow) {
+			StrumPlayAnim(true, Std.int(Math.abs(note.noteData)), time);
+		}
 		note.hitByOpponent = true;
 
 		callOnLuas('opponentNoteHit', [
@@ -4355,7 +4529,12 @@ class PlayState extends MusicBeatState {
 		}
 	}
 
+
+
 	function goodNoteHit(note:Note):Void {
+		if (!note.isSustainNote)
+			notesHitArray.push(Date.now());
+
 		if (!note.wasGoodHit) {
 			if (cpuControlled && (note.ignoreNote || note.hitCausesMiss))
 				return;
@@ -4704,10 +4883,10 @@ class PlayState extends MusicBeatState {
 		iconPlayer1.updateHitbox();
 		iconPlayer2.updateHitbox();
 
-		iconBounce = !iconBounce;
+		iconBounceAngle = !iconBounceAngle;
 
-		if (ClientPrefs.iconBounce) {
-			if (iconBounce) {
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			if (iconBounceAngle) {
 				iconPlayer1.angle = 15;
 				iconPlayer2.angle = 15; // Credits: notweuz (Creator from OS Engine.)
 			} else {
@@ -4944,7 +5123,18 @@ class PlayState extends MusicBeatState {
 		setOnLuas('rating', ratingPercent);
 		setOnLuas('ratingName', ratingName);
 		setOnLuas('ratingFC', ratingFC);
-		judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nFreaks: ${freaks}';
+
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+		    judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\nFreaks: ${freaks}';
+	    }
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+		    judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\n####s: ${freaks}';
+	    }
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+		    judgementCounterTxt.text = 'Sicks: ${sicks}\nGoods: ${goods}\nBads: ${bads}\n####s: ${freaks}';
+	    }
 	}
 
 	var curLight:Int = -1;

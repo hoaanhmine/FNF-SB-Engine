@@ -71,7 +71,18 @@ class MenuCharacterEditorState extends MusicBeatState {
 		add(grpWeekCharacters);
 
 		txtOffsets = new FlxText(20, 10, 0, "[0, 0]", 32);
-		txtOffsets.setFormat("Bahnschrift", 32, FlxColor.WHITE, CENTER);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			txtOffsets.setFormat("Bahnschrift", 32, FlxColor.WHITE, CENTER);
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			txtOffsets.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER);
+		}
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			txtOffsets.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER);
+		}
+
 		txtOffsets.alpha = 0.7;
 		add(txtOffsets);
 
@@ -82,7 +93,18 @@ class MenuCharacterEditorState extends MusicBeatState {
 		var tipText:FlxText = new FlxText(0, 540, FlxG.width, "Arrow Buttons - Change Offset (Hold A for 10x speed)
 			\nB - Play \"Start Press\" animation (Boyfriend Character Type)", 16);
 		#end
-		tipText.setFormat("Bahnschrift", 16, FlxColor.WHITE, CENTER);
+		if (ClientPrefs.gameStyle == 'SB Engine') {
+			tipText.setFormat("Bahnschrift", 16, FlxColor.WHITE, CENTER);
+		}
+
+		if (ClientPrefs.gameStyle == 'Psych Engine') {
+			tipText.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, CENTER);
+		}
+
+		if (ClientPrefs.gameStyle == 'Better UI') {
+			tipText.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, CENTER);
+		}
+
 		tipText.scrollFactor.set();
 		add(tipText);
 
@@ -304,9 +326,9 @@ class MenuCharacterEditorState extends MusicBeatState {
 		}
 
 		if (!blockInput) {
-			FlxG.sound.muteKeys = TitleState.muteKeys;
-			FlxG.sound.volumeDownKeys = TitleState.volumeDownKeys;
-			FlxG.sound.volumeUpKeys = TitleState.volumeUpKeys;
+			FlxG.sound.muteKeys = TitleScreenState.muteKeys;
+			FlxG.sound.volumeDownKeys = TitleScreenState.volumeDownKeys;
+			FlxG.sound.volumeUpKeys = TitleScreenState.volumeUpKeys;
 			if (#if !android FlxG.keys.justPressed.ESCAPE #else FlxG.android.justReleased.BACK #end) {
 				MusicBeatState.switchState(new editors.MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
